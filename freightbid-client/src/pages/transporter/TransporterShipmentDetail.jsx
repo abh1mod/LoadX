@@ -23,7 +23,7 @@ import Badge from '../../components/common/Badge';
 import Countdown from '../../components/common/Countdown';
 import Stepper from '../../components/common/Stepper';
 import toast from 'react-hot-toast';
-import { formatINR, formatDateTime } from '../../utils/formatters';
+import { formatINR, formatDateTime, parseISTDate } from '../../utils/formatters';
 
 export const TransporterShipmentDetail = () => {
   const { id } = useParams();
@@ -78,7 +78,7 @@ export const TransporterShipmentDetail = () => {
   const totalBidders = liveData?.totalBidders || 0;
   const currentStatus = liveData?.serverComputedStatus || shipment?.status;
   const secondsRemaining = liveData?.secondsRemaining ?? (
-    shipment?.biddingEnd ? Math.max(0, Math.floor((new Date(shipment.biddingEnd).getTime() - Date.now()) / 1000)) : 0
+    shipment?.biddingEnd ? Math.max(0, Math.floor(((parseISTDate(shipment.biddingEnd)?.getTime() || 0) - Date.now()) / 1000)) : 0
   );
 
   // Auto-populate input with current bid amount if user has bid and hasn't typed

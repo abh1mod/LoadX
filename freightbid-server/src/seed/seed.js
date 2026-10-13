@@ -1,3 +1,4 @@
+process.env.TZ = process.env.TZ || 'Asia/Kolkata';
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const { connectDB, closeDB } = require('../config/db');

@@ -1,6 +1,7 @@
 const Shipment = require('../models/Shipment');
 const Bid = require('../models/Bid');
 const { SHIPMENT_STATUS, BID_STATUS } = require('../utils/constants');
+const { parseISTDate } = require('../utils/dateUtils');
 
 /**
  * Computes the time-based derived status of a shipment and updates it in DB if changed.
@@ -16,8 +17,8 @@ const deriveAndSyncShipmentStatus = async (shipment) => {
   }
 
   const now = new Date();
-  const startTime = new Date(shipment.biddingStart);
-  const endTime = new Date(shipment.biddingEnd);
+  const startTime = parseISTDate(shipment.biddingStart);
+  const endTime = parseISTDate(shipment.biddingEnd);
 
   let newStatus = shipment.status;
 
@@ -64,7 +65,7 @@ const getShipmentLeaderboard = async (shipmentId, currentUserId = null) => {
   const currentStatus = await deriveAndSyncShipmentStatus(shipment);
 
   const now = new Date();
-  const endTime = new Date(shipment.biddingEnd);
+  const endTime = parseISTDate(shipment.biddingEnd);
   const secondsRemaining = Math.max(0, Math.floor((endTime.getTime() - now.getTime()) / 1000));
 
   // Fetch all active bids populated with transporter info

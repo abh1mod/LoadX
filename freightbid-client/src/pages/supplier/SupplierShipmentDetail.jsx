@@ -25,7 +25,7 @@ import Stepper from '../../components/common/Stepper';
 import Modal from '../../components/common/Modal';
 import RatingStars from '../../components/common/RatingStars';
 import toast from 'react-hot-toast';
-import { formatINR, formatDateTime } from '../../utils/formatters';
+import { formatINR, formatDateTime, parseISTDate } from '../../utils/formatters';
 
 export const SupplierShipmentDetail = () => {
   const { id } = useParams();
@@ -84,7 +84,7 @@ export const SupplierShipmentDetail = () => {
   const leaderboard = liveData?.leaderboard || [];
   const lowestBid = liveData?.lowestBid;
   const secondsRemaining = liveData?.secondsRemaining ?? (
-    shipment?.biddingEnd ? Math.max(0, Math.floor((new Date(shipment.biddingEnd).getTime() - Date.now()) / 1000)) : 0
+    shipment?.biddingEnd ? Math.max(0, Math.floor(((parseISTDate(shipment.biddingEnd)?.getTime() || 0) - Date.now()) / 1000)) : 0
   );
   const currentStatus = liveData?.serverComputedStatus || shipment?.status;
 

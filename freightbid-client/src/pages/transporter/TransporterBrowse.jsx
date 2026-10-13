@@ -18,7 +18,7 @@ import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Countdown from '../../components/common/Countdown';
-import { formatINR, formatDateTime, VEHICLE_TYPES } from '../../utils/formatters';
+import { formatINR, formatDateTime, parseISTDate, VEHICLE_TYPES } from '../../utils/formatters';
 
 export const TransporterBrowse = () => {
   const [shipments, setShipments] = useState([]);
@@ -136,7 +136,7 @@ export const TransporterBrowse = () => {
           {shipments.map((s) => {
             const isOpen = s.status === 'OPEN';
             const secs = s.biddingEnd
-              ? Math.max(0, Math.floor((new Date(s.biddingEnd).getTime() - Date.now()) / 1000))
+              ? Math.max(0, Math.floor(((parseISTDate(s.biddingEnd)?.getTime() || 0) - Date.now()) / 1000))
               : 0;
 
             return (

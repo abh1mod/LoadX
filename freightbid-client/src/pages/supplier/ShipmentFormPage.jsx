@@ -16,7 +16,13 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Card from '../../components/common/Card';
 import toast from 'react-hot-toast';
-import { CARGO_TYPES, VEHICLE_TYPES } from '../../utils/formatters';
+import {
+  CARGO_TYPES,
+  VEHICLE_TYPES,
+  toISTDateTimeLocal,
+  toISTDateOnly,
+  parseISTDate
+} from '../../utils/formatters';
 
 export const ShipmentFormPage = ({ mode = 'create' }) => {
   const { id } = useParams();
@@ -26,11 +32,12 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Default bidding start: 5 mins from now, end: 24h from now
-  const defaultStart = new Date(Date.now() + 5 * 60 * 1000).toISOString().slice(0, 16);
-  const defaultEnd = new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 16);
-  const defaultPickup = new Date(Date.now() + 48 * 3600 * 1000).toISOString().slice(0, 10);
-  const defaultDelivery = new Date(Date.now() + 96 * 3600 * 1000).toISOString().slice(0, 10);
+  // Default bidding start: 5 mins from now, end: 24h from now in IST
+  const now = Date.now();
+  const defaultStart = toISTDateTimeLocal(new Date(now + 5 * 60 * 1000));
+  const defaultEnd = toISTDateTimeLocal(new Date(now + 24 * 3600 * 1000));
+  const defaultPickup = toISTDateOnly(new Date(now + 48 * 3600 * 1000));
+  const defaultDelivery = toISTDateOnly(new Date(now + 96 * 3600 * 1000));
 
   const [formData, setFormData] = useState({
     title: '',
@@ -73,10 +80,10 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
               vehicleTypeRequired: s.vehicleTypeRequired || VEHICLE_TYPES[0],
               basePrice: s.basePrice || '',
               specialInstructions: s.specialInstructions || '',
-              pickupDate: s.pickupDate ? new Date(s.pickupDate).toISOString().slice(0, 10) : defaultPickup,
-              deliveryDeadline: s.deliveryDeadline ? new Date(s.deliveryDeadline).toISOString().slice(0, 10) : defaultDelivery,
-              biddingStart: defaultStart,
-              biddingEnd: defaultEnd,
+              pickupDate: s.pickupDate ? toISTDateOnly(s.pickupDate) : defaultPickup,
+              deliveryDeadline: s.deliveryDeadline ? toISTDateOnly(s.deliveryDeadline) : defaultDelivery,
+              biddingStart: mode === 'edit' && s.biddingStart ? toISTDateTimeLocal(s.biddingStart) : defaultStart,
+              biddingEnd: mode === 'edit' && s.biddingEnd ? toISTDateTimeLocal(s.biddingEnd) : defaultEnd,
               pickupLocation: s.pickupLocation || { address: '', city: '', state: '', pincode: '' },
               dropLocation: s.dropLocation || { address: '', city: '', state: '', pincode: '' }
             });
@@ -111,8 +118,13 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
     setError('');
 
     // Date validations
-    const start = new Date(formData.biddingStart);
-    const end = new Date(formData.biddingEnd);
+    const start = parseISTDate(formData.biddingStart);
+    const end = parseISTDate(formData.biddingEnd);
+
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
+      setError('Please provide valid bidding start and end times.');
+      return;
+    }
 
     if (end <= start) {
       setError('Bidding end time must be after the bidding start time.');
@@ -124,22 +136,30 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
       return;
     }
 
+    const payload = {
+      ...formData,
+      biddingStart: start.toISOString(),
+      biddingEnd: end.toISOString(),
+      pickupDate: parseISTDate(formData.pickupDate)?.toISOString() || formData.pickupDate,
+      deliveryDeadline: parseISTDate(formData.deliveryDeadline)?.toISOString() || formData.deliveryDeadline
+    };
+
     setSubmitting(true);
     try {
       if (mode === 'repost') {
-        const res = await api.post(`/shipments/${id}/repost`, formData);
+        const res = await api.post(`/shipments/${id}/repost`, payload);
         if (res.data?.success) {
           toast.success('Shipment reposted with new reverse auction window!');
           navigate(`/supplier/shipments/${res.data.shipment._id}`);
         }
       } else if (mode === 'edit') {
-        const res = await api.put(`/shipments/${id}`, formData);
+        const res = await api.put(`/shipments/${id}`, payload);
         if (res.data?.success) {
           toast.success('Shipment updated successfully!');
           navigate(`/supplier/shipments/${id}`);
         }
       } else {
-        const res = await api.post('/shipments', formData);
+        const res = await api.post('/shipments', payload);
         if (res.data?.success) {
           toast.success('New shipment created and scheduled for reverse bidding!');
           navigate(`/supplier/shipments/${res.data.shipment._id}`);
@@ -373,22 +393,23 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Bidding Starts At"
+                label="Bidding Starts At (IST)"
                 type="datetime-local"
                 required
                 value={formData.biddingStart}
                 onChange={(e) => handleFieldChange('biddingStart', e.target.value)}
                 icon={Calendar}
+                helperText="Indian Standard Time (IST)"
               />
 
               <Input
-                label="Bidding Hard-Closes At"
+                label="Bidding Hard-Closes At (IST)"
                 type="datetime-local"
                 required
                 value={formData.biddingEnd}
                 onChange={(e) => handleFieldChange('biddingEnd', e.target.value)}
                 icon={Clock}
-                helperText="Carriers can only bid while this window is active"
+                helperText="Indian Standard Time (IST) • Carriers can only bid while this window is active"
               />
             </div>
 

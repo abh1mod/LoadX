@@ -17,7 +17,7 @@ import Table from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import Countdown from '../../components/common/Countdown';
-import { formatINR, formatDateTime } from '../../utils/formatters';
+import { formatINR, formatDateTime, parseISTDate } from '../../utils/formatters';
 
 export const SupplierShipments = () => {
   const [shipments, setShipments] = useState([]);
@@ -90,7 +90,7 @@ export const SupplierShipments = () => {
       key: 'biddingEnd',
       render: (row) => {
         if (row.status === 'OPEN') {
-          const secs = Math.max(0, Math.floor((new Date(row.biddingEnd).getTime() - Date.now()) / 1000));
+          const secs = Math.max(0, Math.floor(((parseISTDate(row.biddingEnd)?.getTime() || 0) - Date.now()) / 1000));
           return <Countdown secondsRemaining={secs} compact />;
         }
         return <span className="text-xs text-slate-400">{formatDateTime(row.biddingEnd)}</span>;

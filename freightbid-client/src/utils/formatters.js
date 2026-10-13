@@ -1,4 +1,85 @@
-import { format, parseISO, isValid } from 'date-fns';
+/**
+ * Date and Time utilities for India Standard Time (IST / Asia/Kolkata: UTC+05:30)
+ */
+
+/**
+ * Safely parses a date input, guaranteeing that date strings without timezone offsets
+ * are treated as Indian Standard Time (IST / Asia/Kolkata).
+ */
+export const parseISTDate = (dateVal) => {
+  if (!dateVal) return null;
+  if (dateVal instanceof Date) {
+    return isNaN(dateVal.getTime()) ? null : dateVal;
+  }
+  if (typeof dateVal === 'number') {
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof dateVal === 'string') {
+    const trimmed = dateVal.trim();
+    if (!trimmed) return null;
+
+    // Date only: YYYY-MM-DD -> treat as start of day in IST (00:00:00+05:30)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return new Date(`${trimmed}T00:00:00+05:30`);
+    }
+
+    // Datetime without timezone offset: YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?$/.test(trimmed)) {
+      return new Date(`${trimmed}+05:30`);
+    }
+
+    // Datetime with space: YYYY-MM-DD HH:mm(:ss)
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}(:\d{2})?(\.\d+)?$/.test(trimmed)) {
+      return new Date(`${trimmed.replace(/\s+/, 'T')}+05:30`);
+    }
+
+    const d = new Date(trimmed);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+};
+
+/**
+ * Converts a Date or ISO string to HTML datetime-local format (YYYY-MM-DDTHH:mm)
+ * in India Standard Time (Asia/Kolkata).
+ */
+export const toISTDateTimeLocal = (dateVal) => {
+  const d = parseISTDate(dateVal);
+  if (!d) return '';
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(d);
+
+  const getPart = (type) => parts.find((p) => p.type === type)?.value || '';
+  let hour = getPart('hour');
+  if (hour === '24') hour = '00';
+  return `${getPart('year')}-${getPart('month')}-${getPart('day')}T${hour}:${getPart('minute')}`;
+};
+
+/**
+ * Converts a Date or ISO string to HTML date input format (YYYY-MM-DD)
+ * in India Standard Time (Asia/Kolkata).
+ */
+export const toISTDateOnly = (dateVal) => {
+  const d = parseISTDate(dateVal);
+  if (!d) return '';
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(d);
+
+  const getPart = (type) => parts.find((p) => p.type === type)?.value || '';
+  return `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+};
 
 /**
  * Format numbers in Indian Rupee format (e.g., ₹1,25,000)
@@ -15,28 +96,58 @@ export const formatINR = (amount) => {
 };
 
 /**
- * Format date string to readable format (e.g., "12 Oct 2026, 04:30 PM")
+ * Format date string to readable Indian Standard Time format (e.g., "12 Oct 2026, 04:30 PM")
  */
-export const formatDateTime = (dateVal) => {
-  if (!dateVal) return 'N/A';
+export const formatDateTime = (dateVal, withZone = false) => {
+  const d = parseISTDate(dateVal);
+  if (!d) return 'N/A';
   try {
-    const d = typeof dateVal === 'string' ? parseISO(dateVal) : new Date(dateVal);
-    if (!isValid(d)) return 'N/A';
-    return format(d, 'dd MMM yyyy, hh:mm a');
+    const parts = new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    }).formatToParts(d);
+
+    const getPart = (type) => parts.find((p) => p.type === type)?.value || '';
+    const day = getPart('day');
+    const month = getPart('month');
+    const year = getPart('year');
+    const hour = getPart('hour');
+    const minute = getPart('minute');
+    const dayPeriod = getPart('dayPeriod').toUpperCase();
+
+    const formatted = `${day} ${month} ${year}, ${hour}:${minute} ${dayPeriod}`;
+    return withZone ? `${formatted} IST` : formatted;
   } catch {
     return 'N/A';
   }
 };
 
 /**
- * Format date string to date only (e.g., "12 Oct 2026")
+ * Format date string to readable Indian Standard Time format with explicit "IST" suffix
+ */
+export const formatDateTimeIST = (dateVal) => formatDateTime(dateVal, true);
+
+/**
+ * Format date string to date only in Indian Standard Time (e.g., "12 Oct 2026")
  */
 export const formatDateOnly = (dateVal) => {
-  if (!dateVal) return 'N/A';
+  const d = parseISTDate(dateVal);
+  if (!d) return 'N/A';
   try {
-    const d = typeof dateVal === 'string' ? parseISO(dateVal) : new Date(dateVal);
-    if (!isValid(d)) return 'N/A';
-    return format(d, 'dd MMM yyyy');
+    const parts = new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).formatToParts(d);
+
+    const getPart = (type) => parts.find((p) => p.type === type)?.value || '';
+    return `${getPart('day')} ${getPart('month')} ${getPart('year')}`;
   } catch {
     return 'N/A';
   }

@@ -3,6 +3,7 @@ const Bid = require('../models/Bid');
 const Review = require('../models/Review');
 const { SHIPMENT_STATUS, BID_STATUS, MILESTONES } = require('../utils/constants');
 const { deriveAndSyncShipmentStatus, getShipmentLeaderboard } = require('../services/shipmentService');
+const { parseISTDate } = require('../utils/dateUtils');
 
 /**
  * Create a new shipment (Supplier only)
@@ -25,10 +26,12 @@ const createShipment = async (req, res, next) => {
       biddingEnd
     } = req.body;
 
-    const start = new Date(biddingStart);
-    const end = new Date(biddingEnd);
+    const start = parseISTDate(biddingStart);
+    const end = parseISTDate(biddingEnd);
+    const parsedPickup = parseISTDate(pickupDate);
+    const parsedDelivery = parseISTDate(deliveryDeadline);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
       return res.status(400).json({
         success: false,
         message: 'Invalid bidding window dates.'
@@ -55,8 +58,8 @@ const createShipment = async (req, res, next) => {
       weight: Number(weight),
       volume: volume ? Number(volume) : null,
       vehicleTypeRequired,
-      pickupDate: new Date(pickupDate),
-      deliveryDeadline: new Date(deliveryDeadline),
+      pickupDate: parsedPickup || new Date(pickupDate),
+      deliveryDeadline: parsedDelivery || new Date(deliveryDeadline),
       basePrice: basePrice ? Number(basePrice) : null,
       specialInstructions,
       biddingStart: start,
@@ -202,7 +205,7 @@ const updateShipment = async (req, res, next) => {
     await deriveAndSyncShipmentStatus(shipment);
 
     const now = new Date();
-    if (now >= new Date(shipment.biddingStart) || shipment.status !== SHIPMENT_STATUS.UPCOMING) {
+    if (now >= parseISTDate(shipment.biddingStart) || shipment.status !== SHIPMENT_STATUS.UPCOMING) {
       return res.status(400).json({
         success: false,
         message: 'Shipment cannot be edited once bidding has started or when not in UPCOMING status.'
@@ -217,12 +220,8 @@ const updateShipment = async (req, res, next) => {
       'weight',
       'volume',
       'vehicleTypeRequired',
-      'pickupDate',
-      'deliveryDeadline',
       'basePrice',
-      'specialInstructions',
-      'biddingStart',
-      'biddingEnd'
+      'specialInstructions'
     ];
 
     updatableFields.forEach((field) => {
@@ -231,7 +230,20 @@ const updateShipment = async (req, res, next) => {
       }
     });
 
-    if (new Date(shipment.biddingEnd) <= new Date(shipment.biddingStart)) {
+    if (req.body.pickupDate !== undefined) {
+      shipment.pickupDate = parseISTDate(req.body.pickupDate) || shipment.pickupDate;
+    }
+    if (req.body.deliveryDeadline !== undefined) {
+      shipment.deliveryDeadline = parseISTDate(req.body.deliveryDeadline) || shipment.deliveryDeadline;
+    }
+    if (req.body.biddingStart !== undefined) {
+      shipment.biddingStart = parseISTDate(req.body.biddingStart) || shipment.biddingStart;
+    }
+    if (req.body.biddingEnd !== undefined) {
+      shipment.biddingEnd = parseISTDate(req.body.biddingEnd) || shipment.biddingEnd;
+    }
+
+    if (parseISTDate(shipment.biddingEnd) <= parseISTDate(shipment.biddingStart)) {
       return res.status(400).json({
         success: false,
         message: 'Bidding end time must be after bidding start time.'
@@ -274,10 +286,10 @@ const repostShipment = async (req, res, next) => {
     }
 
     const { biddingStart, biddingEnd, basePrice, pickupDate, deliveryDeadline } = req.body;
-    const start = new Date(biddingStart);
-    const end = new Date(biddingEnd);
+    const start = parseISTDate(biddingStart);
+    const end = parseISTDate(biddingEnd);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
       return res.status(400).json({
         success: false,
         message: 'Invalid bidding window for reposted shipment.'
@@ -296,8 +308,8 @@ const repostShipment = async (req, res, next) => {
       weight: req.body.weight || oldShipment.weight,
       volume: req.body.volume !== undefined ? req.body.volume : oldShipment.volume,
       vehicleTypeRequired: req.body.vehicleTypeRequired || oldShipment.vehicleTypeRequired,
-      pickupDate: pickupDate ? new Date(pickupDate) : oldShipment.pickupDate,
-      deliveryDeadline: deliveryDeadline ? new Date(deliveryDeadline) : oldShipment.deliveryDeadline,
+      pickupDate: pickupDate ? parseISTDate(pickupDate) : oldShipment.pickupDate,
+      deliveryDeadline: deliveryDeadline ? parseISTDate(deliveryDeadline) : oldShipment.deliveryDeadline,
       basePrice: basePrice !== undefined ? Number(basePrice) : oldShipment.basePrice,
       specialInstructions: req.body.specialInstructions || oldShipment.specialInstructions,
       biddingStart: start,
