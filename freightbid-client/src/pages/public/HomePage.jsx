@@ -98,8 +98,8 @@ export const HomePage = () => {
               <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Industrial Shippers</p>
             </div>
             <div className="bg-white/80 backdrop-blur border border-slate-200/80 rounded-xl p-5 text-center shadow-sm">
-              <p className="text-3xl font-extrabold text-slate-900">1s</p>
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Auction Polling</p>
+              <p className="text-3xl font-extrabold text-slate-900">Live</p>
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mt-1">Real-Time Bidding</p>
             </div>
           </div>
         </div>
@@ -133,7 +133,7 @@ export const HomePage = () => {
               </div>
               <h4 className="text-lg font-bold text-slate-900">2. Live Reverse Bidding</h4>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Carriers compete live via 1-second short polling. Transporters see ranks and competitors updated instantaneously, adjusting rates freely before the window closes.
+                Carriers compete live in real time. Transporters see ranks and competitors updated instantaneously, adjusting rates freely before the window closes.
               </p>
             </Card>
 
@@ -258,15 +258,15 @@ export const HomePage = () => {
       </section>
 
       {/* CTA Footer Banner */}
-      <section className="bg-indigo-900 text-white py-12 shrink-0">
+      <section className="bg-brand-sidebar text-white py-14 shrink-0 border-t border-brand-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Ready to Modernize Your Freight Procurement?</h2>
-          <p className="mt-3 text-indigo-200 text-sm max-w-xl mx-auto">
+          <p className="mt-3 text-slate-300 text-sm max-w-xl mx-auto">
             Join India's most dependable digital freight auction platform today. Fast onboarding with administrator verification.
           </p>
           <div className="mt-6 flex justify-center gap-3">
             <Link to="/register">
-              <Button variant="primary" size="lg" className="bg-white text-indigo-900 hover:bg-indigo-50 shadow-none font-semibold">
+              <Button size="lg" className="bg-white text-brand-sidebar hover:bg-slate-100 shadow-md font-semibold px-8 cursor-pointer">
                 Register Your Fleet or Factory
               </Button>
             </Link>
@@ -275,9 +275,9 @@ export const HomePage = () => {
       </section>
 
       {/* Simple Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 shrink-0">
+      <footer className="bg-white border-t border-brand-border py-6 text-center text-xs text-brand-text-muted shrink-0">
         <div className="max-w-7xl mx-auto px-4">
-          <p>© 2026 LoadX Platform. All rights reserved. Built for B2B Logistics.</p>
+          <p>© 2026 LoadX Logistics Exchange. All rights reserved. Built for Indian Freight & Fleet Operations.</p>
         </div>
       </footer>
     </div>

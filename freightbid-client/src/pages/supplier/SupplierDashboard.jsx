@@ -54,6 +54,7 @@ export const SupplierDashboard = () => {
     {
       header: 'Title / Route',
       key: 'title',
+      className: 'min-w-[220px]',
       render: (row) => (
         <div>
           <span className="font-semibold text-slate-900 block">{row.title}</span>
@@ -66,11 +67,13 @@ export const SupplierDashboard = () => {
     {
       header: 'Status',
       key: 'status',
+      className: 'whitespace-nowrap',
       render: (row) => <Badge status={row.status} size="sm" />
     },
     {
       header: 'Bids Received',
       key: 'bidsCount',
+      className: 'whitespace-nowrap',
       render: (row) => (
         <span className="text-xs font-semibold text-slate-700">
           {row.bidsCount ?? 0} {row.bidsCount === 1 ? 'bid' : 'bids'}
@@ -80,6 +83,7 @@ export const SupplierDashboard = () => {
     {
       header: 'Lowest Bid',
       key: 'lowestBid',
+      className: 'whitespace-nowrap',
       render: (row) => (
         <span className="text-xs font-bold text-emerald-600 font-mono">
           {row.lowestBid ? formatINR(row.lowestBid) : '—'}
@@ -89,6 +93,7 @@ export const SupplierDashboard = () => {
     {
       header: 'Auction Window',
       key: 'biddingEnd',
+      className: 'whitespace-nowrap',
       render: (row) => {
         if (row.status === 'OPEN') {
           const secs = Math.max(0, Math.floor(((parseISTDate(row.biddingEnd)?.getTime() || 0) - Date.now()) / 1000));
@@ -101,9 +106,10 @@ export const SupplierDashboard = () => {
       header: '',
       key: 'actions',
       align: 'right',
+      className: 'whitespace-nowrap',
       render: (row) => (
-        <Link to={`/supplier/shipments/${row._id}`}>
-          <Button variant="ghost" size="sm" className="text-indigo-600 hover:text-indigo-800">
+        <Link to={`/supplier/shipments/${row._id}`} className="inline-block whitespace-nowrap">
+          <Button variant="ghost" size="sm" className="text-brand-primary hover:text-brand-primary-hover font-semibold whitespace-nowrap">
             View Live Room &rarr;
           </Button>
         </Link>
@@ -114,16 +120,21 @@ export const SupplierDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-brand-border shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Shipper Control Center</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-brand-text-primary tracking-tight">Shipper Control Center</h1>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-border">
+              Shipper Portal
+            </span>
+          </div>
+          <p className="text-xs text-brand-text-secondary mt-1">
             Post freight loads, monitor real-time reverse bidding, and award freight contracts.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/supplier/shipments/new">
-            <Button variant="primary" icon={PlusCircle}>
+            <Button variant="primary" icon={PlusCircle} className="cursor-pointer">
               Post New Shipment
             </Button>
           </Link>
@@ -136,7 +147,7 @@ export const SupplierDashboard = () => {
           title="Open Auctions"
           value={counts.open}
           subtitle="Carriers currently bidding"
-          color="indigo"
+          color="primary"
           icon={Gavel}
         />
         <StatCard
@@ -166,9 +177,10 @@ export const SupplierDashboard = () => {
       <Card
         title="Recent Freight Consignments"
         subtitle="Live status of your posted loads"
+        bodyClassName="p-0 overflow-hidden"
         action={
           <Link to="/supplier/shipments">
-            <Button variant="ghost" size="sm" className="text-xs text-indigo-600">
+            <Button variant="ghost" size="sm" className="text-xs text-brand-primary font-semibold hover:bg-brand-primary-light">
               View All My Shipments &rarr;
             </Button>
           </Link>
@@ -179,6 +191,7 @@ export const SupplierDashboard = () => {
           data={shipments}
           loading={loading}
           emptyMessage="You haven't posted any freight consignments yet."
+          borderless
         />
       </Card>
     </div>

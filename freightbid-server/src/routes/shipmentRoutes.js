@@ -24,6 +24,7 @@ router.post('/', authorize(ROLES.SUPPLIER), shipmentController.createShipment);
 router.get('/:id', shipmentController.getShipmentById);
 router.put('/:id', authorize(ROLES.SUPPLIER), shipmentController.updateShipment);
 router.post('/:id/repost', authorize(ROLES.SUPPLIER), shipmentController.repostShipment);
+router.post('/:id/end-bidding', authorize(ROLES.SUPPLIER), shipmentController.endBidding);
 
 // Bidding & Live Leaderboard (Polled every 1s)
 router.get('/:id/bids', shipmentController.getShipmentBids);

@@ -149,38 +149,34 @@ export const TransporterShipmentDetail = () => {
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm">
+      <div className="bg-brand-card rounded-2xl border border-brand-border p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <Link
               to="/transporter"
-              className="inline-flex items-center gap-1.5 text-xs text-indigo-600 font-medium hover:underline mb-2"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--color-primary)] font-semibold hover:underline mb-2.5 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Freight Loads
+              Back to Available Freight Loads
             </Link>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-900">{shipment.title}</h1>
+              <h1 className="text-2xl font-bold text-brand-text-primary tracking-tight">{shipment.title}</h1>
               <Badge status={currentStatus} size="md" />
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Shipper: <strong className="text-slate-800">{shipment.supplier?.companyName || shipment.supplier?.name}</strong> • Posted {formatDateTime(shipment.createdAt)}
+            <p className="text-xs text-brand-text-secondary mt-1.5 flex flex-wrap items-center gap-2">
+              <span>Shipper: <strong className="text-brand-text-primary">{shipment.supplier?.companyName || shipment.supplier?.name}</strong></span>
+              <span className="text-brand-border">•</span>
+              <span>Posted {formatDateTime(shipment.createdAt)}</span>
             </p>
           </div>
 
           {/* Right Live Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 shrink-0">
             {isOpen && (
-              <>
-                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  Live 1s Polling
-                </span>
-                <Countdown secondsRemaining={secondsRemaining} isLive />
-              </>
+              <Countdown secondsRemaining={secondsRemaining} isLive />
             )}
             {!isOpen && (
-              <span className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium">
+              <span className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">
                 Auction Ended
               </span>
             )}
@@ -191,63 +187,63 @@ export const TransporterShipmentDetail = () => {
       {/* KPI Cards: Your Rank, Lowest Bid, Budget Cap */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Prominent "Your Rank" Card */}
-        <div className={`p-5 rounded-xl border shadow-sm flex items-center justify-between transition-all ${
+        <div className={`p-5 rounded-2xl border shadow-sm flex items-center justify-between transition-all ${
           myRank === 1
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-900 ring-2 ring-emerald-500/10'
+            ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950 ring-1 ring-emerald-500/20'
             : myRank
-            ? 'bg-indigo-50 border-indigo-200 text-indigo-900'
-            : 'bg-white border-slate-200 text-slate-900'
+            ? 'bg-[var(--color-primary-light)] border-[var(--color-primary-border)] text-brand-text-primary'
+            : 'bg-brand-card border-brand-border text-brand-text-primary'
         }`}>
           <div>
-            <p className="text-xs uppercase font-semibold text-slate-500 tracking-wider">Your Position</p>
-            <h3 className="text-2xl font-extrabold mt-1">
+            <p className="text-[11px] uppercase font-bold tracking-wider text-brand-text-muted">Your Position</p>
+            <h3 className="text-2xl font-extrabold mt-1 tracking-tight">
               {myRank ? (
                 <span>
-                  Rank #{myRank} <span className="text-sm font-normal text-slate-500">of {totalBidders}</span>
+                  Rank #{myRank} <span className="text-xs font-semibold text-brand-text-secondary">of {totalBidders}</span>
                 </span>
               ) : (
-                <span className="text-slate-400 text-lg font-normal">Not Bid Yet</span>
+                <span className="text-brand-text-muted text-lg font-medium">Not Bid Yet</span>
               )}
             </h3>
             {myBid && (
-              <p className="text-xs font-mono font-bold mt-1 text-indigo-700">
+              <p className="text-xs font-mono font-bold mt-1 text-[var(--color-primary)]">
                 Your Rate: {formatINR(myBid.amount)}
               </p>
             )}
           </div>
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl ${
-            myRank === 1 ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white'
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl shadow-xs ${
+            myRank === 1 ? 'bg-emerald-600 text-white' : 'bg-[var(--color-primary)] text-white'
           }`}>
             <Trophy className="w-6 h-6" />
           </div>
         </div>
 
         {/* Current Lowest Bid */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div className="bg-brand-card p-5 rounded-2xl border border-brand-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase font-semibold text-slate-500 tracking-wider">Lowest Reverse Bid</p>
-            <h3 className="text-2xl font-extrabold text-emerald-600 font-mono mt-1">
+            <p className="text-[11px] uppercase font-bold tracking-wider text-brand-text-muted">Lowest Reverse Bid</p>
+            <h3 className="text-2xl font-extrabold text-emerald-700 font-mono mt-1 tracking-tight">
               {lowestBid ? formatINR(lowestBid) : 'None'}
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-brand-text-secondary mt-1">
               {totalBidders} {totalBidders === 1 ? 'carrier' : 'carriers'} competing
             </p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shadow-xs">
             <TrendingUp className="w-6 h-6" />
           </div>
         </div>
 
         {/* Shipper Base Budget */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div className="bg-brand-card p-5 rounded-2xl border border-brand-border shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase font-semibold text-slate-500 tracking-wider">Shipper Budget Cap</p>
-            <h3 className="text-2xl font-extrabold text-slate-800 font-mono mt-1">
+            <p className="text-[11px] uppercase font-bold tracking-wider text-brand-text-muted">Shipper Budget Cap</p>
+            <h3 className="text-2xl font-extrabold text-brand-text-primary font-mono mt-1 tracking-tight">
               {shipment.basePrice ? formatINR(shipment.basePrice) : 'Open Bid'}
             </h3>
-            <p className="text-xs text-slate-400 mt-1">Maximum allowed rate</p>
+            <p className="text-xs text-brand-text-secondary mt-1">Maximum allowed rate</p>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-brand-bg-secondary border border-brand-border text-brand-text-secondary flex items-center justify-center shadow-xs">
             <IndianRupee className="w-6 h-6" />
           </div>
         </div>
@@ -265,17 +261,17 @@ export const TransporterShipmentDetail = () => {
             {isOpen ? (
               <form onSubmit={handleBidSubmit} className="space-y-4">
                 {bidError && (
-                  <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium">
                     {bidError}
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-bold text-brand-text-primary uppercase tracking-wider mb-1.5">
                     Your Freight Rate (₹ INR) <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <IndianRupee className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <IndianRupee className="w-4 h-4 text-brand-text-muted absolute left-3 top-2.5" />
                     <input
                       type="number"
                       min="1"
@@ -283,77 +279,113 @@ export const TransporterShipmentDetail = () => {
                       value={bidAmountInput}
                       onChange={(e) => setBidAmountInput(e.target.value)}
                       placeholder="e.g. 74000"
-                      className="w-full pl-9 pr-3 py-2 text-base font-bold font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 text-slate-900"
+                      className="w-full pl-9 pr-3 py-2 text-base font-bold font-mono border border-brand-border rounded-xl focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-border)] text-brand-text-primary bg-white shadow-xs transition-all"
                     />
                   </div>
                   {shipment.basePrice && (
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-brand-text-muted mt-1.5">
                       Must be &le; {formatINR(shipment.basePrice)}
                     </p>
                   )}
                 </div>
 
+                {/* Fast Bid Decrement Chips */}
+                {lowestBid && (
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-wider block">
+                      Quick Rate Presets
+                    </span>
+                    <div className="grid grid-cols-3 gap-1.5 text-xs">
+                      {lowestBid - 500 > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setBidAmountInput(String(lowestBid - 500))}
+                          className="py-1.5 px-1 text-center rounded-lg border border-brand-border bg-brand-bg-secondary hover:bg-[var(--color-primary-light)] hover:border-[var(--color-primary-border)] text-brand-text-primary font-mono text-[11px] transition-colors"
+                        >
+                          -₹500
+                        </button>
+                      )}
+                      {lowestBid - 1000 > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setBidAmountInput(String(lowestBid - 1000))}
+                          className="py-1.5 px-1 text-center rounded-lg border border-brand-border bg-brand-bg-secondary hover:bg-[var(--color-primary-light)] hover:border-[var(--color-primary-border)] text-brand-text-primary font-mono text-[11px] transition-colors"
+                        >
+                          -₹1,000
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setBidAmountInput(String(lowestBid))}
+                        className="py-1.5 px-1 text-center rounded-lg border border-brand-border bg-brand-bg-secondary hover:bg-[var(--color-primary-light)] hover:border-[var(--color-primary-border)] text-brand-text-primary font-mono text-[11px] transition-colors"
+                      >
+                        Match Lowest
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   type="submit"
                   variant="primary"
                   loading={biddingSubmitting}
-                  className="w-full font-semibold shadow-md shadow-indigo-200"
+                  className="w-full font-semibold shadow-sm"
                 >
                   <Send className="w-4 h-4 mr-1.5" />
                   {myBid ? 'Update Active Bid Rate' : 'Submit Reverse Bid'}
                 </Button>
 
-                <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+                <p className="text-[11px] text-brand-text-secondary text-center leading-relaxed">
                   Tie-breaking rule: Earlier timestamp wins if amounts match. Changing your amount resets your tie-break timer.
                 </p>
               </form>
             ) : (
-              <div className="py-6 text-center text-xs text-slate-500">
-                <Clock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="font-semibold text-slate-700">Reverse Auction Closed</p>
-                <p className="text-[11px] text-slate-400 mt-1">The bidding window has reached its hard close. The shipper is reviewing bids.</p>
+              <div className="py-6 text-center text-xs text-brand-text-secondary">
+                <Clock className="w-8 h-8 text-brand-text-muted mx-auto mb-2" />
+                <p className="font-semibold text-brand-text-primary">Reverse Auction Closed</p>
+                <p className="text-[11px] text-brand-text-muted mt-1">The bidding window has reached its hard close. The shipper is reviewing bids.</p>
               </div>
             )}
           </Card>
 
           {/* Consignment Details */}
           <Card title="Consignment Details">
-            <div className="space-y-3 text-xs text-slate-700">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-2">
+            <div className="space-y-3.5 text-xs text-brand-text-primary">
+              <div className="p-3.5 rounded-xl bg-brand-bg-secondary border border-brand-border space-y-2.5">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Origin / Pickup</span>
-                  <strong className="text-slate-900">{shipment.pickupLocation?.city}, {shipment.pickupLocation?.state}</strong>
-                  <p className="text-slate-500 text-[11px] mt-0.5">{shipment.pickupLocation?.address}</p>
+                  <span className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider block">Origin / Pickup</span>
+                  <strong className="text-brand-text-primary text-sm">{shipment.pickupLocation?.city}, {shipment.pickupLocation?.state}</strong>
+                  <p className="text-brand-text-secondary text-[11px] mt-0.5">{shipment.pickupLocation?.address}</p>
                 </div>
-                <div className="pt-2 border-t border-slate-200">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Destination / Delivery</span>
-                  <strong className="text-slate-900">{shipment.dropLocation?.city}, {shipment.dropLocation?.state}</strong>
-                  <p className="text-slate-500 text-[11px] mt-0.5">{shipment.dropLocation?.address}</p>
+                <div className="pt-2.5 border-t border-brand-border">
+                  <span className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider block">Destination / Delivery</span>
+                  <strong className="text-brand-text-primary text-sm">{shipment.dropLocation?.city}, {shipment.dropLocation?.state}</strong>
+                  <p className="text-brand-text-secondary text-[11px] mt-0.5">{shipment.dropLocation?.address}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <div>
-                  <span className="text-slate-400 text-[11px] block">Cargo:</span>
-                  <strong className="text-slate-900">{shipment.cargoType}</strong>
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="p-2.5 rounded-lg bg-brand-bg-secondary border border-brand-border">
+                  <span className="text-brand-text-muted text-[11px] block">Cargo</span>
+                  <strong className="text-brand-text-primary">{shipment.cargoType}</strong>
                 </div>
-                <div>
-                  <span className="text-slate-400 text-[11px] block">Weight:</span>
-                  <strong className="text-slate-900">{shipment.weight?.toLocaleString()} kg</strong>
+                <div className="p-2.5 rounded-lg bg-brand-bg-secondary border border-brand-border">
+                  <span className="text-brand-text-muted text-[11px] block">Weight</span>
+                  <strong className="text-brand-text-primary">{shipment.weight?.toLocaleString()} kg</strong>
                 </div>
-                <div>
-                  <span className="text-slate-400 text-[11px] block">Vehicle:</span>
-                  <strong className="text-slate-900">{shipment.vehicleTypeRequired}</strong>
+                <div className="p-2.5 rounded-lg bg-brand-bg-secondary border border-brand-border">
+                  <span className="text-brand-text-muted text-[11px] block">Vehicle</span>
+                  <strong className="text-brand-text-primary">{shipment.vehicleTypeRequired}</strong>
                 </div>
-                <div>
-                  <span className="text-slate-400 text-[11px] block">Pickup Date:</span>
-                  <strong className="text-slate-900">{formatDateTime(shipment.pickupDate)}</strong>
+                <div className="p-2.5 rounded-lg bg-brand-bg-secondary border border-brand-border">
+                  <span className="text-brand-text-muted text-[11px] block">Pickup Date</span>
+                  <strong className="text-brand-text-primary">{formatDateTime(shipment.pickupDate)}</strong>
                 </div>
               </div>
 
               {shipment.specialInstructions && (
-                <div className="p-2 rounded bg-amber-50 border border-amber-100 text-amber-900 text-[11px]">
-                  <strong>Terms:</strong> {shipment.specialInstructions}
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] leading-relaxed">
+                  <strong className="font-semibold block mb-0.5">Special Instructions:</strong> {shipment.specialInstructions}
                 </div>
               )}
             </div>
@@ -364,33 +396,25 @@ export const TransporterShipmentDetail = () => {
         <div className="lg:col-span-2 space-y-6">
           <Card
             title="Live Reverse Auction Leaderboard"
-            subtitle="Updates live every second via server polling"
-            action={
-              isOpen && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  Live Sync
-                </span>
-              )
-            }
+            subtitle="Compare submitted rates, rankings, and competitor bids"
           >
             {leaderboard.length === 0 ? (
-              <div className="py-16 text-center text-slate-400 text-xs">
+              <div className="py-16 text-center text-brand-text-muted text-xs">
                 No bids have been submitted yet. Be the first transporter to bid!
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-600 border-collapse">
-                  <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+              <div className="overflow-x-auto rounded-2xl border border-brand-border bg-white shadow-xs">
+                <table className="w-full text-left text-sm text-brand-text-secondary border-collapse">
+                  <thead className="bg-brand-bg-secondary text-[11px] font-bold text-brand-text-muted uppercase tracking-wider border-b border-brand-border">
                     <tr>
-                      <th className="py-3 px-4">Rank</th>
-                      <th className="py-3 px-4">Transporter</th>
-                      <th className="py-3 px-4">Location</th>
-                      <th className="py-3 px-4">Bid Amount (INR)</th>
-                      <th className="py-3 px-4">Time Placed</th>
+                      <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Rank</th>
+                      <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Transporter</th>
+                      <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Location</th>
+                      <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Bid Amount (INR)</th>
+                      <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Time Placed</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-brand-border">
                     {leaderboard.map((b) => {
                       const isRank1 = b.rank === 1;
                       const isMe = b.isMe;
@@ -398,44 +422,44 @@ export const TransporterShipmentDetail = () => {
                       return (
                         <tr
                           key={b.bidId}
-                          className={`transition-all duration-300 ${
+                          className={`transition-colors ${
                             isMe
-                              ? 'bg-indigo-50/70 border-l-4 border-l-indigo-600 font-medium'
+                              ? 'bg-[var(--color-primary-light)]/80 border-l-4 border-l-[var(--color-primary)] font-medium'
                               : isRank1
-                              ? 'bg-emerald-50/40 font-medium'
-                              : 'hover:bg-slate-50'
+                              ? 'bg-emerald-50/60 font-medium'
+                              : 'hover:bg-brand-bg-secondary/60'
                           }`}
                         >
-                          <td className="py-3.5 px-4">
+                          <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap">
                             <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                              isRank1 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700'
+                              isRank1 ? 'bg-emerald-600 text-white' : 'bg-brand-bg-secondary text-brand-text-primary border border-brand-border'
                             }`}>
                               #{b.rank}
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 font-semibold text-slate-900">
+                          <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap font-semibold text-brand-text-primary">
                             <div className="flex items-center gap-2">
                               <span>{b.companyName}</span>
                               {isMe && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-600 text-white shadow-xs">
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-[var(--color-primary)] text-white shadow-xs">
                                   You
                                 </span>
                               )}
                             </div>
-                            <span className="text-xs text-slate-400 block font-normal">{b.transporterName}</span>
+                            <span className="text-xs text-brand-text-muted block font-normal">{b.transporterName}</span>
                           </td>
-                          <td className="py-3.5 px-4 text-xs text-slate-500">
+                          <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs text-brand-text-secondary">
                             {b.city || 'India'}
                           </td>
-                          <td className="py-3.5 px-4 font-mono font-bold text-slate-900 text-base">
+                          <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap font-mono font-bold text-brand-text-primary text-base">
                             {formatINR(b.amount)}
                             {isRank1 && (
-                              <span className="ml-2 text-[10px] text-emerald-700 font-sans font-semibold bg-emerald-100 px-1.5 py-0.2 rounded">
+                              <span className="ml-2 text-[10px] text-emerald-800 font-sans font-bold bg-emerald-100 px-1.5 py-0.5 rounded">
                                 Lowest
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-xs text-slate-400">
+                          <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs text-brand-text-muted font-mono">
                             {formatDateTime(b.lastAmountChangedAt || b.placedAt)}
                           </td>
                         </tr>
@@ -449,16 +473,18 @@ export const TransporterShipmentDetail = () => {
 
           {/* If Awarded to Current Transporter */}
           {isAwardedOrDelivered && shipment.awardedTo?._id === liveData?.myBid?.transporterId && (
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+            <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
                 <div>
-                  <h4 className="font-bold text-sm">Congratulations! This consignment was awarded to you.</h4>
-                  <p className="text-xs text-emerald-700">Track and update the transit milestones from your Awarded Shipments tab.</p>
+                  <h4 className="font-bold text-sm text-emerald-950">Congratulations! This consignment was awarded to you.</h4>
+                  <p className="text-xs text-emerald-800 mt-0.5">Track and update the transit milestones from your Awarded Shipments tab.</p>
                 </div>
               </div>
               <Link to="/transporter/awarded">
-                <Button variant="primary" size="sm" className="bg-emerald-700 hover:bg-emerald-800">
+                <Button variant="primary" size="sm" className="whitespace-nowrap shadow-sm">
                   Go to Milestone Updater &rarr;
                 </Button>
               </Link>

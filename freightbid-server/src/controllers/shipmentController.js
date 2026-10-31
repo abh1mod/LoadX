@@ -344,6 +344,62 @@ const getShipmentBids = async (req, res, next) => {
 };
 
 /**
+ * End bidding early for an OPEN or UPCOMING shipment (Supplier only)
+ */
+const endBidding = async (req, res, next) => {
+  try {
+    const shipment = await Shipment.findById(req.params.id);
+    if (!shipment) {
+      return res.status(404).json({ success: false, message: 'Shipment not found' });
+    }
+
+    if (shipment.supplier.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Only the shipment owner can end bidding.' });
+    }
+
+    // Sync status first to ensure we know the latest state
+    await deriveAndSyncShipmentStatus(shipment);
+
+    // Bidding can only be ended if it's currently OPEN or UPCOMING
+    if (![SHIPMENT_STATUS.OPEN, SHIPMENT_STATUS.UPCOMING].includes(shipment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Bidding can only be ended for OPEN or UPCOMING shipments. Current status is ${shipment.status}.`
+      });
+    }
+
+    const now = new Date();
+    // Count active bids to determine if it transitions to CLOSED or EXPIRED
+    const bidCount = await Bid.countDocuments({
+      shipment: shipment._id,
+      status: BID_STATUS.ACTIVE
+    });
+
+    const newStatus = bidCount > 0 ? SHIPMENT_STATUS.CLOSED : SHIPMENT_STATUS.EXPIRED;
+
+    // Set biddingEnd to slightly in the past so time-based checks consistently treat it as ended
+    shipment.biddingEnd = new Date(now.getTime() - 1000);
+    if (new Date(shipment.biddingStart) > now) {
+      shipment.biddingStart = new Date(now.getTime() - 2000);
+    }
+    shipment.status = newStatus;
+    shipment.biddingEndedEarly = true;
+    shipment.biddingEndedAt = now;
+    await shipment.save();
+
+    res.status(200).json({
+      success: true,
+      message: bidCount > 0
+        ? 'Bidding ended successfully. The consignment is now CLOSED and ready to be awarded.'
+        : 'Bidding ended. No bids were placed, so the consignment is now EXPIRED.',
+      shipment
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Award shipment to any bidder after bidding window closes
  */
 const awardShipment = async (req, res, next) => {
@@ -482,6 +538,7 @@ module.exports = {
   updateShipment,
   repostShipment,
   getShipmentBids,
+  endBidding,
   awardShipment,
   submitReview
 };

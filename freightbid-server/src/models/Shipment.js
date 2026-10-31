@@ -133,6 +133,14 @@ const shipmentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Shipment',
       default: null
+    },
+    biddingEndedEarly: {
+      type: Boolean,
+      default: false
+    },
+    biddingEndedAt: {
+      type: Date,
+      default: null
     }
   },
   {

@@ -83,10 +83,15 @@ export const TransporterAwarded = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-brand-card p-6 rounded-2xl border border-brand-border shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Awarded Freight Contracts</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] text-[10px] font-bold uppercase tracking-wider border border-[var(--color-primary-border)]">
+              Operational Fleet Deliveries
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold text-brand-text-primary tracking-tight">Awarded Freight Contracts</h1>
+          <p className="text-xs text-brand-text-secondary mt-1">
             Execute active contracts, advance sequential transit milestones, and complete consignments.
           </p>
         </div>
@@ -96,14 +101,14 @@ export const TransporterAwarded = () => {
       </div>
 
       {loading ? (
-        <div className="py-20 text-center text-xs text-slate-400">
+        <div className="py-20 text-center text-xs text-brand-text-muted">
           Loading awarded contracts...
         </div>
       ) : shipments.length === 0 ? (
-        <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-slate-200 p-8">
-          <Truck className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800">No awarded contracts yet</h3>
-          <p className="text-xs text-slate-500 mt-1">Place competitive bids in open reverse auctions to win freight contracts.</p>
+        <div className="py-16 text-center bg-brand-card rounded-2xl border border-dashed border-brand-border p-8">
+          <Truck className="w-10 h-10 text-brand-text-muted mx-auto mb-3" />
+          <h3 className="text-base font-bold text-brand-text-primary">No awarded contracts yet</h3>
+          <p className="text-xs text-brand-text-secondary mt-1">Place competitive bids in open reverse auctions to win freight contracts.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -116,21 +121,23 @@ export const TransporterAwarded = () => {
               <Card key={s._id} className="overflow-hidden">
                 <div className="p-6">
                   {/* Card Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-brand-border">
                     <div>
-                      <div className="flex items-center gap-2.5">
-                        <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <h3 className="text-lg font-bold text-brand-text-primary">{s.title}</h3>
                         <Badge status={s.status} size="sm" />
                       </div>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Shipper: <strong className="text-slate-800">{s.supplier?.companyName || s.supplier?.name}</strong> • Phone: {s.supplier?.phone || 'N/A'}
+                      <p className="text-xs text-brand-text-secondary mt-1 flex flex-wrap items-center gap-2">
+                        <span>Shipper: <strong className="text-brand-text-primary">{s.supplier?.companyName || s.supplier?.name}</strong></span>
+                        <span className="text-brand-border">•</span>
+                        <span>Phone: <strong className="text-brand-text-primary">{s.supplier?.phone || 'N/A'}</strong></span>
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3.5">
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">Awarded Amount</span>
-                        <span className="text-lg font-extrabold text-emerald-600 font-mono">
+                        <span className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider block">Awarded Amount</span>
+                        <span className="text-lg font-extrabold text-emerald-700 font-mono">
                           {formatINR(s.awardedAmount)}
                         </span>
                       </div>
@@ -140,7 +147,7 @@ export const TransporterAwarded = () => {
                           variant="primary"
                           size="sm"
                           onClick={() => handleOpenAdvance(s)}
-                          className="bg-indigo-600 hover:bg-indigo-700 font-semibold"
+                          className="font-semibold shadow-xs"
                         >
                           Mark as: {nextMilestone}
                           <ChevronRight className="w-4 h-4 ml-1" />
@@ -148,8 +155,8 @@ export const TransporterAwarded = () => {
                       )}
 
                       {isDelivered && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                          <CheckCircle2 className="w-4 h-4" />
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                           Delivery Completed
                         </span>
                       )}
@@ -157,29 +164,29 @@ export const TransporterAwarded = () => {
                   </div>
 
                   {/* Route & Vehicle Specifications */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b border-slate-100 text-xs">
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-1.5 text-indigo-700 font-semibold mb-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 border-b border-brand-border text-xs">
+                    <div className="p-3.5 rounded-xl bg-brand-bg-secondary border border-brand-border">
+                      <div className="flex items-center gap-1.5 text-[var(--color-primary)] font-semibold mb-1">
                         <MapPin className="w-3.5 h-3.5" />
                         Origin (Pickup)
                       </div>
-                      <p className="font-semibold text-slate-900">{s.pickupLocation?.city}, {s.pickupLocation?.state}</p>
-                      <p className="text-slate-500 text-[11px] mt-0.5">{s.pickupLocation?.address}</p>
+                      <p className="font-semibold text-brand-text-primary text-sm">{s.pickupLocation?.city}, {s.pickupLocation?.state}</p>
+                      <p className="text-brand-text-secondary text-[11px] mt-0.5">{s.pickupLocation?.address}</p>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-                      <div className="flex items-center gap-1.5 text-indigo-700 font-semibold mb-1">
+                    <div className="p-3.5 rounded-xl bg-brand-bg-secondary border border-brand-border">
+                      <div className="flex items-center gap-1.5 text-[var(--color-primary)] font-semibold mb-1">
                         <MapPin className="w-3.5 h-3.5" />
                         Destination (Delivery)
                       </div>
-                      <p className="font-semibold text-slate-900">{s.dropLocation?.city}, {s.dropLocation?.state}</p>
-                      <p className="text-slate-500 text-[11px] mt-0.5">{s.dropLocation?.address}</p>
+                      <p className="font-semibold text-brand-text-primary text-sm">{s.dropLocation?.city}, {s.dropLocation?.state}</p>
+                      <p className="text-brand-text-secondary text-[11px] mt-0.5">{s.dropLocation?.address}</p>
                     </div>
                   </div>
 
                   {/* Milestone Progression Stepper */}
                   <div className="pt-6">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-brand-text-muted mb-4">
                       Sequential Transit Milestones
                     </h4>
                     <Stepper
@@ -212,12 +219,12 @@ export const TransporterAwarded = () => {
         }
       >
         <div className="space-y-4">
-          <p className="text-xs text-slate-600">
-            You are advancing this shipment to <strong className="text-indigo-600">{nextMilestoneName}</strong>. Milestones are permanent and visible to the shipper in real time.
+          <p className="text-xs text-brand-text-secondary leading-relaxed">
+            You are advancing this shipment to <strong className="text-[var(--color-primary)] font-semibold">{nextMilestoneName}</strong>. Milestones are permanent and visible to the shipper in real time.
           </p>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-bold text-brand-text-primary uppercase tracking-wider mb-1.5">
               Transit Update Note (Optional)
             </label>
             <textarea
@@ -225,7 +232,7 @@ export const TransporterAwarded = () => {
               value={advanceNote}
               onChange={(e) => setAdvanceNote(e.target.value)}
               placeholder="e.g. Vehicle gate-in completed at factory, driver verified paperwork..."
-              className="w-full p-2.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600"
+              className="w-full p-3 text-xs border border-brand-border rounded-xl focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-border)] text-brand-text-primary bg-white shadow-xs transition-all"
             />
           </div>
         </div>

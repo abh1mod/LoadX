@@ -49,14 +49,14 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* Admin Protected Routes */}
-        <Route element={<DashboardLayout allowedRoles={['ADMIN']} />}>
+        <Route element={<DashboardLayout theme="base" allowedRoles={['ADMIN']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/shipments" element={<AdminShipments />} />
         </Route>
 
         {/* Supplier Protected Routes */}
-        <Route element={<DashboardLayout allowedRoles={['SUPPLIER']} />}>
+        <Route element={<DashboardLayout theme="supplier" allowedRoles={['SUPPLIER']} />}>
           <Route path="/supplier" element={<SupplierDashboard />} />
           <Route path="/supplier/shipments" element={<SupplierShipments />} />
           <Route path="/supplier/shipments/new" element={<ShipmentFormPage mode="create" />} />
@@ -66,7 +66,7 @@ function App() {
         </Route>
 
         {/* Transporter Protected Routes */}
-        <Route element={<DashboardLayout allowedRoles={['TRANSPORTER']} />}>
+        <Route element={<DashboardLayout theme="transporter" allowedRoles={['TRANSPORTER']} />}>
           <Route path="/transporter" element={<TransporterBrowse />} />
           <Route path="/transporter/shipments/:id" element={<TransporterShipmentDetail />} />
           <Route path="/transporter/my-bids" element={<TransporterMyBids />} />

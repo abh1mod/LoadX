@@ -190,17 +190,22 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-brand-border shadow-xs">
         <div>
           <Link
             to="/supplier/shipments"
-            className="inline-flex items-center gap-1.5 text-xs text-indigo-600 font-medium hover:underline mb-2"
+            className="inline-flex items-center gap-1.5 text-xs text-brand-primary font-medium hover:underline mb-2 cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to Shipments
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-brand-text-primary tracking-tight">{pageTitle}</h1>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-border">
+              Shipper Portal
+            </span>
+          </div>
+          <p className="text-xs text-brand-text-secondary mt-1">
             Set route, cargo parameters, and the hard-close reverse bidding window
           </p>
         </div>
@@ -227,13 +232,13 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+                <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wide mb-1.5">
                   Cargo Category <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={formData.cargoType}
                   onChange={(e) => handleFieldChange('cargoType', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white"
+                  className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] bg-white text-brand-text-primary"
                 >
                   {CARGO_TYPES.map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -262,13 +267,13 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+                <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wide mb-1.5">
                   Required Vehicle Class <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={formData.vehicleTypeRequired}
                   onChange={(e) => handleFieldChange('vehicleTypeRequired', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white"
+                  className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] bg-white text-brand-text-primary"
                 >
                   {VEHICLE_TYPES.map((v) => (
                     <option key={v} value={v}>{v}</option>
@@ -294,8 +299,8 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
         <Card title="2. Route & Facility Locations" subtitle="Origin dispatch yard and destination receiving bay">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Pickup Location */}
-            <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-200 text-indigo-700 font-semibold text-xs uppercase tracking-wide">
+            <div className="p-4 rounded-xl bg-brand-bg-secondary border border-brand-border space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-brand-border text-brand-primary font-semibold text-xs uppercase tracking-wide">
                 <MapPin className="w-4 h-4" />
                 Pickup Location (Origin)
               </div>
@@ -339,8 +344,8 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
             </div>
 
             {/* Drop Location */}
-            <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-200 text-indigo-700 font-semibold text-xs uppercase tracking-wide">
+            <div className="p-4 rounded-xl bg-brand-bg-secondary border border-brand-border space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-brand-border text-brand-primary font-semibold text-xs uppercase tracking-wide">
                 <MapPin className="w-4 h-4" />
                 Delivery Location (Destination)
               </div>
@@ -414,7 +419,7 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+              <label className="block text-xs font-semibold text-brand-text-secondary uppercase tracking-wide mb-1.5">
                 Special Handling Instructions & Consignment Terms
               </label>
               <textarea
@@ -422,7 +427,7 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
                 value={formData.specialInstructions}
                 onChange={(e) => handleFieldChange('specialInstructions', e.target.value)}
                 placeholder="e.g. Tarpaulin waterproofing required. Driver PPE mandatory at gate. No transshipment permitted..."
-                className="w-full p-2.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600"
+                className="w-full p-2.5 text-xs border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] placeholder:text-brand-text-muted"
               />
             </div>
           </div>
@@ -439,6 +444,7 @@ export const ShipmentFormPage = ({ mode = 'create' }) => {
             type="submit"
             variant="primary"
             loading={submitting}
+            className="cursor-pointer"
           >
             {mode === 'repost' ? 'Publish Reposted Auction' : mode === 'edit' ? 'Save Changes' : 'Publish Freight Consignment'}
             <CheckCircle2 className="w-4 h-4 ml-1" />

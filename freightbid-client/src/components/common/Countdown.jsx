@@ -52,9 +52,9 @@ export const Countdown = ({
 
   if (compact) {
     return (
-      <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium ${expired ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
-        <Clock className="w-3 h-3" />
-        <span>{expired ? 'Ended' : `${h}:${m}:${s}`}</span>
+      <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium ${expired ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
+        <Clock className="w-3 h-3 text-amber-600" />
+        <span>{expired ? 'Closed' : `${h}:${m}:${s}`}</span>
       </div>
     );
   }
@@ -63,7 +63,7 @@ export const Countdown = ({
     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium ${
       expired
         ? 'bg-slate-100 text-slate-500 border-slate-200'
-        : 'bg-amber-50/80 text-amber-800 border-amber-200 shadow-sm'
+        : 'bg-amber-50/70 text-amber-900 border-amber-200/80 shadow-2xs'
     }`}>
       {isLive && !expired && (
         <span className="relative flex h-2 w-2">
@@ -72,9 +72,9 @@ export const Countdown = ({
         </span>
       )}
       <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-      <span className="text-xs text-slate-600 font-sans font-medium">Closes in:</span>
+      <span className="text-xs text-brand-text-secondary font-sans font-medium">Closes in:</span>
       <span className="font-mono font-bold tracking-wider">
-        {expired ? 'Auction Ended' : `${h}h ${m}m ${s}s`}
+        {expired ? 'Auction Closed' : `${h}h ${m}m ${s}s`}
       </span>
     </div>
   );

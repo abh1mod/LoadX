@@ -57,28 +57,33 @@ export const TransporterBrowse = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-brand-border shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Browse Freight Loads</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-brand-text-primary tracking-tight">Browse Freight Loads</h1>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-border">
+              Carrier Fleet
+            </span>
+          </div>
+          <p className="text-xs text-brand-text-secondary mt-1">
             Discover verified industrial consignments, enter live reverse auctions, and secure return trips.
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={fetchShipments} icon={RefreshCw}>
+        <Button variant="secondary" size="sm" onClick={fetchShipments} icon={RefreshCw} className="cursor-pointer">
           Refresh Auctions
         </Button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="bg-white p-4 rounded-xl border border-brand-border shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-brand-text-muted absolute left-3 top-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search title, cargo, or route..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] placeholder:text-brand-text-muted"
           />
         </div>
 
@@ -86,7 +91,7 @@ export const TransporterBrowse = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white"
+            className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] bg-white text-brand-text-primary"
           >
             <option value="">All Statuses</option>
             <option value="OPEN">Open Auctions Only</option>
@@ -100,7 +105,7 @@ export const TransporterBrowse = () => {
           <select
             value={vehicleFilter}
             onChange={(e) => setVehicleFilter(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white"
+            className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] bg-white text-brand-text-primary"
           >
             <option value="">All Vehicle Types</option>
             {VEHICLE_TYPES.map((v) => (
@@ -115,21 +120,21 @@ export const TransporterBrowse = () => {
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
             placeholder="Filter by city (e.g. Mumbai)..."
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600"
+            className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] placeholder:text-brand-text-muted"
           />
         </div>
       </div>
 
       {/* Shipments Cards Grid */}
       {loading ? (
-        <div className="py-20 text-center text-xs text-slate-400">
+        <div className="py-20 text-center text-xs text-brand-text-muted">
           Loading freight consignment auctions...
         </div>
       ) : shipments.length === 0 ? (
-        <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-slate-200 p-8">
-          <Truck className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800">No consignments match your criteria</h3>
-          <p className="text-xs text-slate-500 mt-1">Try clearing your filters or check back shortly for new loads.</p>
+        <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-brand-border p-8">
+          <Truck className="w-10 h-10 text-brand-text-muted mx-auto mb-3" />
+          <h3 className="text-base font-bold text-brand-text-primary">No consignments match your criteria</h3>
+          <p className="text-xs text-brand-text-secondary mt-1">Try clearing your filters or check back shortly for new loads.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -143,7 +148,7 @@ export const TransporterBrowse = () => {
               <div
                 key={s._id}
                 onClick={() => navigate(`/transporter/shipments/${s._id}`)}
-                className="bg-white rounded-xl border border-slate-200 hover:border-indigo-400 transition-all duration-200 p-5 shadow-sm hover:shadow-md flex flex-col justify-between cursor-pointer group"
+                className="bg-white rounded-xl border border-brand-border hover:border-[var(--color-primary)] transition-all duration-150 p-5 shadow-xs hover:shadow-hover flex flex-col justify-between cursor-pointer group"
               >
                 <div>
                   {/* Status & Countdown Header */}
@@ -152,63 +157,63 @@ export const TransporterBrowse = () => {
                     {isOpen ? (
                       <Countdown secondsRemaining={secs} compact />
                     ) : (
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-brand-text-muted">
                         {formatDateTime(s.biddingEnd)}
                       </span>
                     )}
                   </div>
 
                   {/* Consignment Title */}
-                  <h3 className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors line-clamp-1">
+                  <h3 className="font-bold text-brand-text-primary text-sm group-hover:text-brand-primary transition-colors line-clamp-1 tracking-tight">
                     {s.title}
                   </h3>
 
                   {/* Route Indicator */}
-                  <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                  <div className="mt-3 p-3 rounded-lg bg-brand-bg-secondary border border-brand-border flex items-center justify-between text-xs">
                     <div className="truncate">
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Origin</span>
-                      <strong className="text-slate-900 truncate">{s.pickupLocation?.city}</strong>
+                      <span className="text-[10px] text-brand-text-muted uppercase font-semibold block">Origin</span>
+                      <strong className="text-brand-text-primary truncate">{s.pickupLocation?.city}</strong>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-indigo-500 shrink-0 mx-2" />
+                    <ArrowRight className="w-4 h-4 text-brand-primary shrink-0 mx-2" />
                     <div className="truncate text-right">
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">Destination</span>
-                      <strong className="text-slate-900 truncate">{s.dropLocation?.city}</strong>
+                      <span className="text-[10px] text-brand-text-muted uppercase font-semibold block">Destination</span>
+                      <strong className="text-brand-text-primary truncate">{s.dropLocation?.city}</strong>
                     </div>
                   </div>
 
                   {/* Consignment Specs */}
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-brand-text-secondary">
                     <div>
-                      <span className="text-[11px] text-slate-400 block">Vehicle Required:</span>
-                      <strong className="text-slate-800">{s.vehicleTypeRequired}</strong>
+                      <span className="text-[11px] text-brand-text-muted block">Vehicle Required:</span>
+                      <strong className="text-brand-text-primary">{s.vehicleTypeRequired}</strong>
                     </div>
                     <div>
-                      <span className="text-[11px] text-slate-400 block">Cargo Weight:</span>
-                      <strong className="text-slate-800">{s.weight?.toLocaleString()} kg</strong>
+                      <span className="text-[11px] text-brand-text-muted block">Cargo Weight:</span>
+                      <strong className="text-brand-text-primary">{s.weight?.toLocaleString()} kg</strong>
                     </div>
                   </div>
 
                   {s.basePrice && (
-                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className="text-slate-500">Max Budget Cap:</span>
-                      <strong className="text-slate-900 font-mono text-sm">{formatINR(s.basePrice)}</strong>
+                    <div className="mt-3 pt-3 border-t border-brand-border flex items-center justify-between text-xs">
+                      <span className="text-brand-text-secondary">Budget Cap:</span>
+                      <strong className="text-brand-text-primary font-mono text-sm">{formatINR(s.basePrice)}</strong>
                     </div>
                   )}
 
                   {/* If user has already bid */}
                   {s.hasBid && (
-                    <div className="mt-3 p-2 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-between text-xs text-indigo-900">
-                      <span>Your Active Bid:</span>
-                      <strong className="font-mono text-indigo-700">{formatINR(s.myBidAmount)}</strong>
+                    <div className="mt-3 p-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-900">
+                      <span className="font-medium">Your Active Bid:</span>
+                      <strong className="font-mono text-emerald-700 font-bold">{formatINR(s.myBidAmount)}</strong>
                     </div>
                   )}
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400">
+                <div className="mt-5 pt-3 border-t border-brand-border flex items-center justify-between">
+                  <span className="text-[11px] text-brand-text-muted truncate max-w-[130px]">
                     Shipper: {s.supplier?.companyName || s.supplier?.name}
                   </span>
-                  <Button variant="primary" size="sm" className="text-xs">
+                  <Button variant="primary" size="sm" className="text-xs cursor-pointer shadow-xs">
                     {isOpen ? 'Enter Auction' : 'View Details'} &rarr;
                   </Button>
                 </div>

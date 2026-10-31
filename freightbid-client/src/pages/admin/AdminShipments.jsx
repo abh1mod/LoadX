@@ -54,6 +54,7 @@ export const AdminShipments = () => {
     {
       header: 'Supplier / Shipper',
       key: 'supplier',
+      className: 'whitespace-nowrap',
       render: (row) => (
         <div className="text-xs">
           <p className="font-semibold text-slate-800">{row.supplier?.companyName || row.supplier?.name}</p>
@@ -64,6 +65,7 @@ export const AdminShipments = () => {
     {
       header: 'Vehicle & Weight',
       key: 'vehicleTypeRequired',
+      className: 'whitespace-nowrap',
       render: (row) => (
         <div className="text-xs text-slate-600">
           <p className="font-medium">{row.vehicleTypeRequired}</p>
@@ -74,11 +76,13 @@ export const AdminShipments = () => {
     {
       header: 'Status',
       key: 'status',
+      className: 'whitespace-nowrap',
       render: (row) => <Badge status={row.status} size="sm" />
     },
     {
       header: 'Max / Awarded Price',
       key: 'basePrice',
+      className: 'whitespace-nowrap',
       render: (row) => (
         <div className="text-xs">
           {row.awardedAmount ? (
@@ -94,8 +98,9 @@ export const AdminShipments = () => {
     {
       header: 'Bidding Window',
       key: 'biddingEnd',
+      className: 'whitespace-nowrap',
       render: (row) => (
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-slate-500 whitespace-nowrap">
           <p>End: {formatDateTime(row.biddingEnd)}</p>
         </div>
       )
@@ -103,6 +108,7 @@ export const AdminShipments = () => {
     {
       header: 'Awarded Carrier',
       key: 'awardedTo',
+      className: 'whitespace-nowrap',
       render: (row) => (
         <div className="text-xs">
           {row.awardedTo ? (
@@ -120,10 +126,16 @@ export const AdminShipments = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-brand-border shadow-xs">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Platform Shipments Registry</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-brand-text-primary tracking-tight">Platform Shipments Registry</h1>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-primary-light text-brand-primary border border-brand-primary-border">
+              Enterprise Base
+            </span>
+          </div>
+          <p className="text-xs text-brand-text-secondary mt-1">
             Read-only registry of all active, awarded, delivered, and expired freight consignments.
           </p>
         </div>
@@ -133,27 +145,27 @@ export const AdminShipments = () => {
           onClick={fetchShipments}
           icon={RefreshCw}
         >
-          Refresh
+          Refresh Registry
         </Button>
       </div>
 
       {/* Filter and Search */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row gap-3">
+      <div className="bg-white p-4 rounded-xl border border-brand-border shadow-xs flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-brand-text-muted absolute left-3 top-3" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search consignment title, cargo type, or cities..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] placeholder:text-brand-text-muted"
           />
         </div>
         <div className="sm:w-56">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-600 bg-white"
+            className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] bg-white text-brand-text-primary"
           >
             <option value="">All Statuses</option>
             <option value="OPEN">OPEN (Reverse Auction)</option>

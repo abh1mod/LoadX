@@ -181,76 +181,79 @@ export const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div data-theme="base" className="min-h-screen bg-brand-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+            >
               <Truck className="w-5 h-5" />
             </div>
           </Link>
-          <h2 className="mt-3 text-3xl font-extrabold text-slate-900">
+          <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-brand-text-primary tracking-tight">
             Register for LoadX
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Join the enterprise network for reverse freight auctions
+          <p className="mt-1 text-xs text-brand-text-secondary">
+            Join the enterprise network for reverse freight auctions & carrier matching
           </p>
         </div>
 
         {/* Role Selector Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-6">
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+        <div className="bg-white rounded-2xl border border-brand-border p-6 shadow-xs mb-6">
+          <label className="block text-xs font-semibold text-brand-text-muted uppercase tracking-wider mb-3">
             Select Enterprise Role
           </label>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
               type="button"
               onClick={() => { setRole('TRANSPORTER'); setStep(1); }}
-              className={`p-4 rounded-xl border text-left transition-all ${
+              className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                 role === 'TRANSPORTER'
-                  ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm'
-                  : 'border-slate-200 hover:border-slate-300 bg-white'
+                  ? 'border-[#047857] bg-[#ECFDF5]/80 ring-2 ring-[#047857]/20 shadow-xs'
+                  : 'border-brand-border hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <Truck className={`w-5 h-5 ${role === 'TRANSPORTER' ? 'text-indigo-600' : 'text-slate-400'}`} />
-                {role === 'TRANSPORTER' && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                <Truck className={`w-5 h-5 ${role === 'TRANSPORTER' ? 'text-[#047857]' : 'text-slate-400'}`} />
+                {role === 'TRANSPORTER' && <span className="w-2.5 h-2.5 rounded-full bg-[#047857]" />}
               </div>
               <h3 className="font-bold text-slate-900 text-sm">Transporter / Carrier</h3>
-              <p className="text-[11px] text-slate-500 mt-1">Fleet operators placing reverse bids on freight loads</p>
+              <p className="text-[11px] text-slate-600 mt-1">Fleet operators placing reverse bids on freight loads</p>
             </button>
 
             <button
               type="button"
               onClick={() => { setRole('SUPPLIER'); setStep(1); }}
-              className={`p-4 rounded-xl border text-left transition-all ${
+              className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                 role === 'SUPPLIER'
-                  ? 'border-indigo-600 bg-indigo-50/60 ring-2 ring-indigo-500/20 shadow-sm'
-                  : 'border-slate-200 hover:border-slate-300 bg-white'
+                  ? 'border-[#2563EB] bg-[#EFF6FF]/80 ring-2 ring-[#2563EB]/20 shadow-xs'
+                  : 'border-brand-border hover:border-slate-300 bg-white'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <Building2 className={`w-5 h-5 ${role === 'SUPPLIER' ? 'text-indigo-600' : 'text-slate-400'}`} />
-                {role === 'SUPPLIER' && <span className="w-2 h-2 rounded-full bg-indigo-600" />}
+                <Building2 className={`w-5 h-5 ${role === 'SUPPLIER' ? 'text-[#2563EB]' : 'text-slate-400'}`} />
+                {role === 'SUPPLIER' && <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />}
               </div>
               <h3 className="font-bold text-slate-900 text-sm">Shipper / Supplier</h3>
-              <p className="text-[11px] text-slate-500 mt-1">Manufacturers posting full-truckload consignments</p>
+              <p className="text-[11px] text-slate-600 mt-1">Manufacturers posting full-truckload consignments</p>
             </button>
           </div>
         </div>
 
         {/* Step Progress Bar */}
-        <div className="flex items-center justify-between mb-6 px-2 text-xs font-medium text-slate-400">
-          <span className={step >= 1 ? 'text-indigo-600 font-bold' : ''}>1. Company Info</span>
-          <span className="w-8 h-0.5 bg-slate-200" />
+        <div className="flex items-center justify-between mb-6 px-2 text-xs font-semibold text-brand-text-muted">
+          <span className={step >= 1 ? 'text-brand-primary font-bold' : ''}>1. Company Profile</span>
+          <span className="w-8 h-0.5 bg-brand-border" />
           {role === 'TRANSPORTER' && (
             <>
-              <span className={step >= 2 ? 'text-indigo-600 font-bold' : ''}>2. Fleet Profile</span>
-              <span className="w-8 h-0.5 bg-slate-200" />
+              <span className={step >= 2 ? 'text-brand-primary font-bold' : ''}>2. Fleet Profile</span>
+              <span className="w-8 h-0.5 bg-brand-border" />
             </>
           )}
-          <span className={(role === 'TRANSPORTER' ? step >= 3 : step >= 2) ? 'text-indigo-600 font-bold' : ''}>
+          <span className={(role === 'TRANSPORTER' ? step >= 3 : step >= 2) ? 'text-brand-primary font-bold' : ''}>
             {role === 'TRANSPORTER' ? '3. Verification Docs' : '2. Verification Docs'}
           </span>
         </div>
@@ -413,10 +416,10 @@ export const RegisterPage = () => {
                           key={v}
                           type="button"
                           onClick={() => handleVehicleToggle(v)}
-                          className={`p-2.5 rounded-lg border text-xs text-left font-medium transition-all ${
+                          className={`p-2.5 rounded-lg border text-xs text-left font-medium transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-indigo-50 border-indigo-600 text-indigo-700'
-                              : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                              ? 'bg-emerald-50 border-emerald-600 text-emerald-800'
+                              : 'bg-white border-brand-border text-brand-text-secondary hover:bg-slate-50'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -424,7 +427,7 @@ export const RegisterPage = () => {
                               type="checkbox"
                               readOnly
                               checked={isSelected}
-                              className="rounded text-indigo-600"
+                              className="rounded text-emerald-600 accent-emerald-600"
                             />
                             <span>{v}</span>
                           </div>
@@ -459,17 +462,17 @@ export const RegisterPage = () => {
             {/* STEP 3 (or Step 2 for Supplier): Document Uploads */}
             {((role === 'TRANSPORTER' && step === 3) || (role === 'SUPPLIER' && step === 2)) && (
               <div className="space-y-4">
-                <h3 className="text-base font-bold text-slate-800 pb-2 border-b border-slate-100">
+                <h3 className="text-base font-bold text-brand-text-primary pb-2 border-b border-brand-border">
                   Verification Documents Upload (PDF or Images, max 5MB)
                 </h3>
 
                 <div className="space-y-4">
                   {/* GST Document */}
-                  <div className="p-4 border rounded-xl bg-slate-50/50 border-slate-200">
+                  <div className="p-4 border rounded-xl bg-brand-bg-secondary/60 border-brand-border">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-slate-700">GST Registration Certificate</h4>
-                        <p className="text-[11px] text-slate-500">Attach Certificate of Incorporation or GST document</p>
+                        <h4 className="text-xs font-semibold uppercase text-brand-text-primary">GST Registration Certificate</h4>
+                        <p className="text-[11px] text-brand-text-secondary">Attach Certificate of Incorporation or GST document</p>
                       </div>
                       <input
                         type="file"
@@ -479,14 +482,14 @@ export const RegisterPage = () => {
                         className="hidden"
                       />
                       <label htmlFor="gstDoc">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-text-primary hover:bg-slate-50 cursor-pointer shadow-2xs">
                           <UploadCloud className="w-3.5 h-3.5" />
                           {files.gstDoc ? 'Replace File' : 'Choose File'}
                         </span>
                       </label>
                     </div>
                     {files.gstDoc && (
-                      <div className="mt-3 flex items-center gap-2 text-xs text-indigo-700 font-medium">
+                      <div className="mt-3 flex items-center gap-2 text-xs text-brand-primary font-medium">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         <span>{files.gstDoc.name}</span>
                       </div>
@@ -494,11 +497,11 @@ export const RegisterPage = () => {
                   </div>
 
                   {/* PAN Document */}
-                  <div className="p-4 border rounded-xl bg-slate-50/50 border-slate-200">
+                  <div className="p-4 border rounded-xl bg-brand-bg-secondary/60 border-brand-border">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="text-xs font-semibold uppercase text-slate-700">Company PAN Card</h4>
-                        <p className="text-[11px] text-slate-500">Government issued PAN card copy</p>
+                        <h4 className="text-xs font-semibold uppercase text-brand-text-primary">Company PAN Card</h4>
+                        <p className="text-[11px] text-brand-text-secondary">Government issued PAN card copy</p>
                       </div>
                       <input
                         type="file"
@@ -508,14 +511,14 @@ export const RegisterPage = () => {
                         className="hidden"
                       />
                       <label htmlFor="panDoc">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-text-primary hover:bg-slate-50 cursor-pointer shadow-2xs">
                           <UploadCloud className="w-3.5 h-3.5" />
                           {files.panDoc ? 'Replace File' : 'Choose File'}
                         </span>
                       </label>
                     </div>
                     {files.panDoc && (
-                      <div className="mt-3 flex items-center gap-2 text-xs text-indigo-700 font-medium">
+                      <div className="mt-3 flex items-center gap-2 text-xs text-brand-primary font-medium">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         <span>{files.panDoc.name}</span>
                       </div>
@@ -524,11 +527,11 @@ export const RegisterPage = () => {
 
                   {/* Transport License (if transporter) */}
                   {role === 'TRANSPORTER' && (
-                    <div className="p-4 border rounded-xl bg-slate-50/50 border-slate-200">
+                    <div className="p-4 border rounded-xl bg-brand-bg-secondary/60 border-brand-border">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h4 className="text-xs font-semibold uppercase text-slate-700">National Carriage Permit / License</h4>
-                          <p className="text-[11px] text-slate-500">Goods carriage vehicle permit document</p>
+                          <h4 className="text-xs font-semibold uppercase text-brand-text-primary">National Carriage Permit / License</h4>
+                          <p className="text-[11px] text-brand-text-secondary">Goods carriage vehicle permit document</p>
                         </div>
                         <input
                           type="file"
@@ -538,14 +541,14 @@ export const RegisterPage = () => {
                           className="hidden"
                         />
                         <label htmlFor="licenseDoc">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand-border bg-white text-xs font-medium text-brand-text-primary hover:bg-slate-50 cursor-pointer shadow-2xs">
                             <UploadCloud className="w-3.5 h-3.5" />
                             {files.licenseDoc ? 'Replace File' : 'Choose File'}
                           </span>
                         </label>
                       </div>
                       {files.licenseDoc && (
-                        <div className="mt-3 flex items-center gap-2 text-xs text-indigo-700 font-medium">
+                        <div className="mt-3 flex items-center gap-2 text-xs text-brand-primary font-medium">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                           <span>{files.licenseDoc.name}</span>
                         </div>
@@ -577,9 +580,9 @@ export const RegisterPage = () => {
           </form>
         </div>
 
-        <div className="mt-6 text-center text-xs text-slate-500">
+        <div className="mt-6 text-center text-xs text-brand-text-secondary">
           Already registered?{' '}
-          <Link to="/login" className="font-semibold text-indigo-600 hover:underline">
+          <Link to="/login" className="font-semibold text-brand-primary hover:underline">
             Sign In here
           </Link>
         </div>
