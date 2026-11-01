@@ -445,6 +445,7 @@ const awardShipment = async (req, res, next) => {
           awardedTo: winningBid.transporter,
           awardedBid: winningBid._id,
           awardedAmount: winningBid.amount,
+          awardedExpectedDeliveryHours: winningBid.expectedDeliveryHours || null,
           awardedAt: new Date(),
           currentMilestone: 'Awarded',
           milestones: [

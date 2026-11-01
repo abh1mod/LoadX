@@ -73,6 +73,16 @@ export const TransporterMyBids = () => {
       )
     },
     {
+      header: 'Est. Delivery',
+      key: 'expectedDeliveryHours',
+      className: 'whitespace-nowrap',
+      render: (row) => (
+        <span className="text-xs font-mono font-medium text-brand-text-secondary whitespace-nowrap">
+          {row.expectedDeliveryHours ? `${row.expectedDeliveryHours} hrs` : '—'}
+        </span>
+      )
+    },
+    {
       header: 'Bid Outcome',
       key: 'status',
       className: 'whitespace-nowrap',

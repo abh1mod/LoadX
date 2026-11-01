@@ -305,44 +305,51 @@ const seedData = async (shouldCloseDb = false) => {
       shipment: openShipment._id,
       transporter: transporter1._id,
       amount: 78000,
+      expectedDeliveryHours: 48,
       status: BID_STATUS.ACTIVE,
       placedAt: timeT1,
       updatedAt: timeT1,
       lastAmountChangedAt: timeT1,
-      history: [{ amount: 78000, at: timeT1 }]
+      history: [{ amount: 78000, expectedDeliveryHours: 48, at: timeT1 }]
     });
 
     await Bid.create({
       shipment: openShipment._id,
       transporter: transporter2._id,
       amount: 75000,
+      expectedDeliveryHours: 44,
       status: BID_STATUS.ACTIVE,
       placedAt: timeT2,
       updatedAt: timeT2,
       lastAmountChangedAt: timeT2,
-      history: [{ amount: 75000, at: timeT2 }]
+      history: [{ amount: 75000, expectedDeliveryHours: 44, at: timeT2 }]
     });
 
     await Bid.create({
       shipment: openShipment._id,
       transporter: transporter3._id,
       amount: 80000,
+      expectedDeliveryHours: 52,
       status: BID_STATUS.ACTIVE,
       placedAt: timeT3,
       updatedAt: timeT3,
       lastAmountChangedAt: timeT3,
-      history: [{ amount: 80000, at: timeT3 }]
+      history: [{ amount: 80000, expectedDeliveryHours: 52, at: timeT3 }]
     });
 
     await Bid.create({
       shipment: openShipment._id,
       transporter: transporter4._id,
       amount: 72000, // Lowest rank 1
+      expectedDeliveryHours: 42,
       status: BID_STATUS.ACTIVE,
       placedAt: timeT4,
       updatedAt: timeT4,
       lastAmountChangedAt: timeT4,
-      history: [{ amount: 74000, at: timeT4 }, { amount: 72000, at: timeT4 }]
+      history: [
+        { amount: 74000, expectedDeliveryHours: 46, at: timeT4 },
+        { amount: 72000, expectedDeliveryHours: 42, at: timeT4 }
+      ]
     });
 
     // 2. UPCOMING SHIPMENT (starts in 12 hours)

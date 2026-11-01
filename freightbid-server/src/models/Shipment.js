@@ -120,6 +120,10 @@ const shipmentSchema = new mongoose.Schema(
       type: Number,
       default: null
     },
+    awardedExpectedDeliveryHours: {
+      type: Number,
+      default: null
+    },
     awardedAt: {
       type: Date,
       default: null

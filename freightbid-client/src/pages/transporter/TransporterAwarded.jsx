@@ -137,9 +137,14 @@ export const TransporterAwarded = () => {
                     <div className="flex items-center gap-3.5">
                       <div className="text-right">
                         <span className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider block">Awarded Amount</span>
-                        <span className="text-lg font-extrabold text-emerald-700 font-mono">
+                        <span className="text-lg font-extrabold text-emerald-700 font-mono block">
                           {formatINR(s.awardedAmount)}
                         </span>
+                        {(s.awardedExpectedDeliveryHours || s.awardedBid?.expectedDeliveryHours) && (
+                          <span className="text-[11px] text-brand-text-secondary font-mono">
+                            Est. Transit: <strong>{s.awardedExpectedDeliveryHours || s.awardedBid?.expectedDeliveryHours} hrs</strong>
+                          </span>
+                        )}
                       </div>
 
                       {!isDelivered && (

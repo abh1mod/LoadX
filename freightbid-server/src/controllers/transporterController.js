@@ -2,6 +2,7 @@ const Shipment = require('../models/Shipment');
 const Bid = require('../models/Bid');
 const { SHIPMENT_STATUS, BID_STATUS, MILESTONES } = require('../utils/constants');
 const { deriveAndSyncShipmentStatus, getShipmentLeaderboard } = require('../services/shipmentService');
+const { parseISTDate } = require('../utils/dateUtils');
 
 /**
  * Browse shipments for transporters with filtering and search
@@ -104,7 +105,7 @@ const browseShipments = async (req, res, next) => {
  */
 const placeBid = async (req, res, next) => {
   try {
-    const { amount } = req.body;
+    const { amount, expectedDeliveryHours } = req.body;
     const numericAmount = Number(amount);
 
     if (!numericAmount || numericAmount <= 0) {
@@ -135,6 +136,20 @@ const placeBid = async (req, res, next) => {
       });
     }
 
+    let hoursNum = expectedDeliveryHours !== undefined && expectedDeliveryHours !== null && expectedDeliveryHours !== '' ? Number(expectedDeliveryHours) : null;
+    if (hoursNum !== null && (isNaN(hoursNum) || hoursNum <= 0)) {
+      hoursNum = null;
+    }
+
+    // Default value of hours should be equal to the difference between pickup and delivery date hours
+    if (hoursNum === null && shipment.pickupDate && shipment.deliveryDeadline) {
+      const p = parseISTDate(shipment.pickupDate);
+      const d = parseISTDate(shipment.deliveryDeadline);
+      if (p && d && d.getTime() > p.getTime()) {
+        hoursNum = Math.round((d.getTime() - p.getTime()) / (1000 * 60 * 60));
+      }
+    }
+
     // Check if bid already exists
     let existingBid = await Bid.findOne({
       shipment: shipment._id,
@@ -147,11 +162,18 @@ const placeBid = async (req, res, next) => {
       // If already exists, update it cleanly
       const isDifferentAmount = existingBid.amount !== numericAmount;
       existingBid.amount = numericAmount;
+      if (hoursNum !== null) {
+        existingBid.expectedDeliveryHours = hoursNum;
+      }
       existingBid.updatedAt = now;
       if (isDifferentAmount) {
         existingBid.lastAmountChangedAt = now;
       }
-      existingBid.history.push({ amount: numericAmount, at: now });
+      existingBid.history.push({
+        amount: numericAmount,
+        expectedDeliveryHours: existingBid.expectedDeliveryHours,
+        at: now
+      });
       await existingBid.save();
 
       return res.status(200).json({
@@ -166,10 +188,11 @@ const placeBid = async (req, res, next) => {
       shipment: shipment._id,
       transporter: req.user._id,
       amount: numericAmount,
+      expectedDeliveryHours: hoursNum,
       placedAt: now,
       updatedAt: now,
       lastAmountChangedAt: now,
-      history: [{ amount: numericAmount, at: now }]
+      history: [{ amount: numericAmount, expectedDeliveryHours: hoursNum, at: now }]
     });
 
     res.status(201).json({
@@ -187,7 +210,7 @@ const placeBid = async (req, res, next) => {
  */
 const updateMyBid = async (req, res, next) => {
   try {
-    const { amount } = req.body;
+    const { amount, expectedDeliveryHours } = req.body;
     const numericAmount = Number(amount);
 
     if (!numericAmount || numericAmount <= 0) {
@@ -231,15 +254,27 @@ const updateMyBid = async (req, res, next) => {
       });
     }
 
+    let hoursNum = expectedDeliveryHours !== undefined && expectedDeliveryHours !== null && expectedDeliveryHours !== '' ? Number(expectedDeliveryHours) : undefined;
+    if (hoursNum !== undefined && (isNaN(hoursNum) || hoursNum <= 0)) {
+      hoursNum = undefined;
+    }
+
     const now = new Date();
     const isDifferent = bid.amount !== numericAmount;
 
     bid.amount = numericAmount;
+    if (hoursNum !== undefined) {
+      bid.expectedDeliveryHours = hoursNum;
+    }
     bid.updatedAt = now;
     if (isDifferent) {
       bid.lastAmountChangedAt = now;
     }
-    bid.history.push({ amount: numericAmount, at: now });
+    bid.history.push({
+      amount: numericAmount,
+      expectedDeliveryHours: bid.expectedDeliveryHours,
+      at: now
+    });
 
     await bid.save();
 

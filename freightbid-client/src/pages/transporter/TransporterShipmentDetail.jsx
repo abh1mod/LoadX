@@ -33,6 +33,7 @@ export const TransporterShipmentDetail = () => {
 
   // Bid form state
   const [bidAmountInput, setBidAmountInput] = useState('');
+  const [expectedDeliveryHoursInput, setExpectedDeliveryHoursInput] = useState('');
   const [biddingSubmitting, setBiddingSubmitting] = useState(false);
   const [bidError, setBidError] = useState('');
 
@@ -81,12 +82,31 @@ export const TransporterShipmentDetail = () => {
     shipment?.biddingEnd ? Math.max(0, Math.floor(((parseISTDate(shipment.biddingEnd)?.getTime() || 0) - Date.now()) / 1000)) : 0
   );
 
-  // Auto-populate input with current bid amount if user has bid and hasn't typed
+  // Auto-populate input with current bid amount and expected delivery hours if user has bid
   useEffect(() => {
-    if (myBid && !bidAmountInput) {
-      setBidAmountInput(String(myBid.amount));
+    if (myBid) {
+      if (!bidAmountInput) {
+        setBidAmountInput(String(myBid.amount));
+      }
+      if (myBid.expectedDeliveryHours && !expectedDeliveryHoursInput) {
+        setExpectedDeliveryHoursInput(String(myBid.expectedDeliveryHours));
+      }
     }
-  }, [myBid, bidAmountInput]);
+  }, [myBid, bidAmountInput, expectedDeliveryHoursInput]);
+
+  // Set default value of expected delivery hours equal to difference between pickup and delivery dates
+  useEffect(() => {
+    if (shipment?.pickupDate && shipment?.deliveryDeadline && !expectedDeliveryHoursInput && !myBid?.expectedDeliveryHours) {
+      const p = parseISTDate(shipment.pickupDate);
+      const d = parseISTDate(shipment.deliveryDeadline);
+      if (p && d && d.getTime() > p.getTime()) {
+        const diffHours = Math.round((d.getTime() - p.getTime()) / (1000 * 60 * 60));
+        if (diffHours > 0) {
+          setExpectedDeliveryHoursInput(String(diffHours));
+        }
+      }
+    }
+  }, [shipment?.pickupDate, shipment?.deliveryDeadline, expectedDeliveryHoursInput, myBid]);
 
   const handleBidSubmit = async (e) => {
     e.preventDefault();
@@ -98,6 +118,12 @@ export const TransporterShipmentDetail = () => {
       return;
     }
 
+    const numericHours = expectedDeliveryHoursInput ? Number(expectedDeliveryHoursInput) : null;
+    if (numericHours !== null && (isNaN(numericHours) || numericHours <= 0)) {
+      setBidError('Please enter valid expected delivery hours (positive number).');
+      return;
+    }
+
     if (shipment.basePrice && numericAmount > shipment.basePrice) {
       setBidError(`Bid cannot exceed the shipper's budget cap of ${formatINR(shipment.basePrice)}.`);
       return;
@@ -105,16 +131,20 @@ export const TransporterShipmentDetail = () => {
 
     setBiddingSubmitting(true);
     try {
+      const payload = {
+        amount: numericAmount,
+        expectedDeliveryHours: numericHours || undefined
+      };
       if (myBid) {
         // Update existing bid
-        const res = await api.put(`/shipments/${id}/bids/me`, { amount: numericAmount });
+        const res = await api.put(`/shipments/${id}/bids/me`, payload);
         if (res.data?.success) {
           toast.success(`Bid updated to ${formatINR(numericAmount)}!`);
           refreshNow();
         }
       } else {
         // Place initial bid
-        const res = await api.post(`/shipments/${id}/bids`, { amount: numericAmount });
+        const res = await api.post(`/shipments/${id}/bids`, payload);
         if (res.data?.success) {
           toast.success(`Bid placed at ${formatINR(numericAmount)}!`);
           refreshNow();
@@ -206,9 +236,16 @@ export const TransporterShipmentDetail = () => {
               )}
             </h3>
             {myBid && (
-              <p className="text-xs font-mono font-bold mt-1 text-[var(--color-primary)]">
-                Your Rate: {formatINR(myBid.amount)}
-              </p>
+              <div className="mt-1 space-y-0.5">
+                <p className="text-xs font-mono font-bold text-[var(--color-primary)]">
+                  Your Rate: {formatINR(myBid.amount)}
+                </p>
+                {myBid.expectedDeliveryHours && (
+                  <p className="text-[11px] text-brand-text-secondary font-medium">
+                    Est. Transit: <strong className="text-brand-text-primary font-mono">{myBid.expectedDeliveryHours} hrs</strong>
+                  </p>
+                )}
+              </div>
             )}
           </div>
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl shadow-xs ${
@@ -287,6 +324,27 @@ export const TransporterShipmentDetail = () => {
                       Must be &le; {formatINR(shipment.basePrice)}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-brand-text-primary uppercase tracking-wider mb-1.5">
+                    Expected Delivery Time (Hours) <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Clock className="w-4 h-4 text-brand-text-muted absolute left-3 top-2.5" />
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      value={expectedDeliveryHoursInput}
+                      onChange={(e) => setExpectedDeliveryHoursInput(e.target.value)}
+                      placeholder="e.g. 48"
+                      className="w-full pl-9 pr-3 py-2 text-base font-bold font-mono border border-brand-border rounded-xl focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary-border)] text-brand-text-primary bg-white shadow-xs transition-all"
+                    />
+                  </div>
+                  <p className="text-[11px] text-brand-text-muted mt-1.5">
+                    Transit hours required for delivery (default is calculated from pickup & delivery schedule).
+                  </p>
                 </div>
 
                 {/* Fast Bid Decrement Chips */}
@@ -411,6 +469,7 @@ export const TransporterShipmentDetail = () => {
                       <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Transporter</th>
                       <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Location</th>
                       <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Bid Amount (INR)</th>
+                      <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Expected Delivery</th>
                       <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Time Placed</th>
                     </tr>
                   </thead>
@@ -457,6 +516,16 @@ export const TransporterShipmentDetail = () => {
                               <span className="ml-2 text-[10px] text-emerald-800 font-sans font-bold bg-emerald-100 px-1.5 py-0.5 rounded">
                                 Lowest
                               </span>
+                            )}
+                          </td>
+                          <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs font-semibold text-brand-text-primary">
+                            {b.expectedDeliveryHours ? (
+                              <span className="inline-flex items-center gap-1 font-mono">
+                                <Clock className="w-3.5 h-3.5 text-brand-text-muted" />
+                                {b.expectedDeliveryHours} hrs
+                              </span>
+                            ) : (
+                              <span className="text-brand-text-muted font-normal">—</span>
                             )}
                           </td>
                           <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs text-brand-text-muted font-mono">

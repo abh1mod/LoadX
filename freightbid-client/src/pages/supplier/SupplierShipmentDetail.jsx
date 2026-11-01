@@ -315,7 +315,11 @@ export const SupplierShipmentDetail = () => {
       {isAwardedOrBeyond && (
         <Card
           title="Consignment Transit Milestones"
-          subtitle={`Contract awarded to ${shipment.awardedTo?.companyName || shipment.awardedTo?.name}`}
+          subtitle={`Contract awarded to ${shipment.awardedTo?.companyName || shipment.awardedTo?.name}${
+            shipment.awardedExpectedDeliveryHours || shipment.awardedBid?.expectedDeliveryHours
+              ? ` • Target Transit: ${shipment.awardedExpectedDeliveryHours || shipment.awardedBid?.expectedDeliveryHours} hrs`
+              : ''
+          }`}
         >
           <div className="py-2">
             <Stepper
@@ -377,7 +381,7 @@ export const SupplierShipmentDetail = () => {
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Transporter / Fleet</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Rating & Verification</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Proposed Price (INR)</th>
-                    <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Delivery Estimate</th>
+                    <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Expected Delivery</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Bid Modified</th>
                     {isClosed && <th className="py-3.5 px-6 first:pl-7 last:pr-7 text-right whitespace-nowrap">Award Action</th>}
                   </tr>
@@ -419,8 +423,15 @@ export const SupplierShipmentDetail = () => {
                             </span>
                           )}
                         </td>
-                        <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs text-brand-text-secondary font-medium">
-                          {b.estimatedDays ? `${b.estimatedDays} days` : 'Standard route timeline'}
+                        <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs text-brand-text-primary font-semibold">
+                          {b.expectedDeliveryHours ? (
+                            <span className="inline-flex items-center gap-1 font-mono text-brand-text-primary">
+                              <Clock className="w-3.5 h-3.5 text-brand-text-muted" />
+                              {b.expectedDeliveryHours} hrs
+                            </span>
+                          ) : (
+                            <span className="text-brand-text-muted font-normal">Standard schedule</span>
+                          )}
                         </td>
                         <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs text-brand-text-muted">
                           {formatDateTime(b.lastAmountChangedAt || b.placedAt)}
@@ -468,7 +479,10 @@ export const SupplierShipmentDetail = () => {
       >
         <div className="space-y-3 text-xs text-brand-text-secondary">
           <p>
-            You are selecting <strong className="text-brand-text-primary">{bidToAward?.companyName}</strong> at a final agreed contract price of <strong className="text-emerald-700 text-sm font-mono">{bidToAward ? formatINR(bidToAward.amount) : ''}</strong>.
+            You are selecting <strong className="text-brand-text-primary">{bidToAward?.companyName}</strong> at a final agreed contract price of <strong className="text-emerald-700 text-sm font-mono">{bidToAward ? formatINR(bidToAward.amount) : ''}</strong>
+            {bidToAward?.expectedDeliveryHours ? (
+              <span> with expected delivery in <strong className="text-brand-text-primary font-mono">{bidToAward.expectedDeliveryHours} hours</strong></span>
+            ) : ''}.
           </p>
           <div className="p-3.5 rounded-xl bg-brand-primary-light border border-brand-primary-border text-brand-primary">
             <strong className="font-semibold">Business Rule:</strong> You are free to award to any participating carrier regardless of rank based on your preferred combination of rate, delivery timeline, and transporter reputation. This action is final and unlocks sequential transit tracking milestones.

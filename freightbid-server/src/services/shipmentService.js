@@ -89,6 +89,7 @@ const getShipmentLeaderboard = async (shipmentId, currentUserId = null) => {
       myBid = {
         _id: b._id,
         amount: b.amount,
+        expectedDeliveryHours: b.expectedDeliveryHours,
         lastAmountChangedAt: b.lastAmountChangedAt,
         placedAt: b.placedAt,
         history: b.history
@@ -103,6 +104,7 @@ const getShipmentLeaderboard = async (shipmentId, currentUserId = null) => {
       companyName: b.transporter?.companyName || 'Logistics Co',
       city: b.transporter?.city || '',
       amount: b.amount,
+      expectedDeliveryHours: b.expectedDeliveryHours,
       isMe: Boolean(isMe),
       lastAmountChangedAt: b.lastAmountChangedAt,
       placedAt: b.placedAt

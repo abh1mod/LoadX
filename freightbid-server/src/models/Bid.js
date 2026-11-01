@@ -7,6 +7,10 @@ const bidHistorySchema = new mongoose.Schema(
       type: Number,
       required: true
     },
+    expectedDeliveryHours: {
+      type: Number,
+      default: null
+    },
     at: {
       type: Date,
       default: Date.now
@@ -33,6 +37,11 @@ const bidSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Bid amount is required'],
       min: [1, 'Bid amount must be a positive number']
+    },
+    expectedDeliveryHours: {
+      type: Number,
+      default: null,
+      min: [1, 'Expected delivery hours must be at least 1 hour']
     },
     status: {
       type: String,
