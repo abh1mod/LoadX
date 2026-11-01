@@ -12,7 +12,7 @@
   <a href="#-three-theme-design-system"><img src="https://img.shields.io/badge/UI_Theme-Three--Theme_Architecture-3156D9?style=for-the-badge" alt="Design System" /></a>
   <a href="#-tech-stack"><img src="https://img.shields.io/badge/Frontend-React_18_%7C_Vite_%7C_Tailwind-2563EB?style=for-the-badge" alt="Frontend" /></a>
   <a href="#-tech-stack"><img src="https://img.shields.io/badge/Backend-Node.js_%7C_Express_%7C_MongoDB-047857?style=for-the-badge" alt="Backend" /></a>
-  <a href="#-deployment"><img src="https://img.shields.io/badge/Deploy-Railway_%7C_Netlify-000000?style=for-the-badge" alt="Deploy" /></a>
+  <a href="#-production-deployment"><img src="https://img.shields.io/badge/Deploy-Railway_%7C_Render_%7C_Netlify-46E3B7?style=for-the-badge&logo=render&logoColor=black" alt="Deploy" /></a>
 </p>
 
 ---
@@ -267,7 +267,7 @@ The repository contains both root and client [`netlify.toml`](file:///c:/Users/a
   - `VITE_API_URL`: `https://<your-railway-backend>.up.railway.app/api`
 
 ### 2. Deploy Backend on Railway
-The server is configured for seamless deployment via Nixpacks and Railway:
+The server is configured for deployment via Nixpacks and Railway:
 - In your Railway service settings:
   - **Root Directory**: `/freightbid-server`
   - **Start Command**: `npm start`
@@ -277,8 +277,35 @@ The server is configured for seamless deployment via Nixpacks and Railway:
   - `PORT`: `5000` (or Railway default `$PORT`)
   - `MONGO_URI`: `mongodb+srv://<user>:<password>@cluster.mongodb.net/loadx`
   - `JWT_SECRET`: `<secure-random-secret>`
-  - `CLIENT_URL`: `https://<your-client>.netlify.app`
+  - `CLIENT_URL`: `https://loadxport.netlify.app`
   - `TZ`: `Asia/Kolkata`
+
+### 3. Deploy Backend on Render
+The repository includes a ready-to-use [`render.yaml`](file:///c:/Users/abhis/Desktop/LoadX/render.yaml) Blueprint:
+
+#### Option A: One-Click Blueprint
+1. Go to [dashboard.render.com](https://dashboard.render.com/) and click **New > Blueprint**.
+2. Connect the `LoadX` repository.
+3. Render automatically reads `render.yaml` and provisions the `loadx-api` web service.
+4. Fill in your MongoDB connection string for `MONGO_URI`.
+
+#### Option B: Manual Web Service Setup
+1. Click **New > Web Service**.
+2. Connect the repository and configure:
+   - **Name**: `loadx-api`
+   - **Region**: Oregon (or nearest)
+   - **Root Directory**: `freightbid-server`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/api/health`
+3. Add the **Environment Variables**:
+   - `NODE_ENV`: `production`
+   - `TZ`: `Asia/Kolkata`
+   - `CLIENT_URL`: `https://loadxport.netlify.app`
+   - `MONGO_URI`: `mongodb+srv://<user>:<password>@cluster.mongodb.net/loadx`
+   - `JWT_SECRET`: `<secure-random-secret>`
+   - `JWT_EXPIRES_IN`: `7d`
 
 ---
 

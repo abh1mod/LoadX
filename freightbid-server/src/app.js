@@ -10,30 +10,54 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
-
-// CORS Configuration supporting multiple comma-separated origins
-const rawClientUrls = process.env.CLIENT_URL || 'http://localhost:5173';
-const allowedOrigins = rawClientUrls.split(',').map((url) => url.trim().replace(/\/$/, ''));
-
+// Security middleware with cross-origin resource policy enabled
 app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
-      const isAllowed = allowedOrigins.includes(origin) || allowedOrigins.includes('*');
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
   })
 );
+
+// CORS Configuration supporting default production domains, netlify apps, and comma-separated CLIENT_URL
+const defaultOrigins = [
+  'https://loadxport.netlify.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+];
+
+const rawClientUrls = process.env.CLIENT_URL || '';
+const envOrigins = rawClientUrls
+  .split(',')
+  .map((url) => url.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow server-to-server, curl, mobile, or requests without Origin header
+    if (!origin) return callback(null, true);
+
+    const isExplicit = allowedOrigins.includes(origin) || allowedOrigins.includes('*');
+    const isNetlify = /^https:\/\/([a-zA-Z0-9_-]+\.)?netlify\.app$/.test(origin);
+    const isVercel = /^https:\/\/([a-zA-Z0-9_-]+\.)?vercel\.app$/.test(origin);
+
+    if (isExplicit || isNetlify || isVercel) {
+      return callback(null, true);
+    }
+
+    console.warn(`[CORS] Rejected request from origin: ${origin}`);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Set-Cookie']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
