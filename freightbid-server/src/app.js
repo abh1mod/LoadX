@@ -62,6 +62,17 @@ app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Root welcome & status endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    name: 'LoadX Logistics API',
+    status: 'ONLINE',
+    version: '1.0.0',
+    healthCheck: '/api/health',
+    clientApp: process.env.CLIENT_URL || 'http://localhost:5173'
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({

@@ -1,0 +1,14 @@
+{
+  "name": "loadx-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LoadX B2B Freight Marketplace Monorepo",
+  "scripts": {
+    "dev": "npm --prefix freightbid-server run dev",
+    "dev:server": "npm --prefix freightbid-server run dev",
+    "dev:client": "npm --prefix freightbid-client run dev",
+    "build": "npm --prefix freightbid-client run build",
+    "start": "npm --prefix freightbid-server start",
+    "seed": "npm --prefix freightbid-server run seed"
+  }
+}
