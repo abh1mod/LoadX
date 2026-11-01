@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('freightbid_user');
@@ -79,6 +81,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    navigate('/', { replace: true });
     try {
       await api.post('/auth/logout');
     } catch {
@@ -89,6 +92,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('freightbid_token');
       localStorage.removeItem('freightbid_user');
       toast.success('Logged out successfully');
+      navigate('/', { replace: true });
     }
   };
 

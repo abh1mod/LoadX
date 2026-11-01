@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import {
   Truck,
   Building2,
@@ -20,7 +20,11 @@ import Card from '../../components/common/Card';
 import { VEHICLE_TYPES } from '../../utils/formatters';
 
 export const RegisterPage = () => {
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   const [role, setRole] = useState('TRANSPORTER'); // SUPPLIER or TRANSPORTER
   const [step, setStep] = useState(1);
