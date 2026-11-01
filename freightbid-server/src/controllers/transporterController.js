@@ -8,7 +8,7 @@ const { deriveAndSyncShipmentStatus, getShipmentLeaderboard } = require('../serv
  */
 const browseShipments = async (req, res, next) => {
   try {
-    const { status, city, vehicleType, search, page = 1, limit = 20 } = req.query;
+    const { status, city, vehicleType, search, sortBy = 'recent', page = 1, limit = 20 } = req.query;
     const query = {};
 
     if (status) {
@@ -38,11 +38,22 @@ const browseShipments = async (req, res, next) => {
       ];
     }
 
+    let sortOptions = { biddingEnd: -1, createdAt: -1 };
+    if (sortBy === 'oldest') {
+      sortOptions = { biddingEnd: 1, createdAt: 1 };
+    } else if (sortBy === 'ending_soon') {
+      sortOptions = { biddingEnd: 1, createdAt: -1 };
+    } else if (sortBy === 'price_desc') {
+      sortOptions = { basePrice: -1, biddingEnd: -1 };
+    } else if (sortBy === 'price_asc') {
+      sortOptions = { basePrice: 1, biddingEnd: -1 };
+    }
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const total = await Shipment.countDocuments(query);
     const shipments = await Shipment.find(query)
       .populate('supplier', 'name companyName')
-      .sort({ biddingEnd: 1, createdAt: -1 })
+      .sort(sortOptions)
       .skip(skip)
       .limit(parseInt(limit));
 

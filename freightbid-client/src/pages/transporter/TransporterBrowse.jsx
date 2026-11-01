@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Package,
@@ -27,6 +27,7 @@ export const TransporterBrowse = () => {
   const [vehicleFilter, setVehicleFilter] = useState('');
   const [cityFilter, setCityFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
 
   const navigate = useNavigate();
 
@@ -38,6 +39,7 @@ export const TransporterBrowse = () => {
       if (vehicleFilter) params.vehicleType = vehicleFilter;
       if (cityFilter) params.city = cityFilter;
       if (search.trim()) params.search = search.trim();
+      if (sortBy) params.sortBy = sortBy;
 
       const res = await api.get('/shipments', { params });
       if (res.data?.success) {
@@ -48,11 +50,42 @@ export const TransporterBrowse = () => {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, vehicleFilter, cityFilter, search]);
+  }, [statusFilter, vehicleFilter, cityFilter, search, sortBy]);
 
   useEffect(() => {
     fetchShipments();
   }, [fetchShipments]);
+
+  // Ensure shipments are sorted such that the most recent shipment is on top
+  const sortedShipments = useMemo(() => {
+    if (!Array.isArray(shipments) || shipments.length === 0) return [];
+
+    return [...shipments].sort((a, b) => {
+      if (sortBy === 'oldest') {
+        const dateA = new Date(a.biddingEnd || a.createdAt || 0).getTime();
+        const dateB = new Date(b.biddingEnd || b.createdAt || 0).getTime();
+        return dateA - dateB;
+      }
+      if (sortBy === 'ending_soon') {
+        const dateA = new Date(a.biddingEnd || 0).getTime();
+        const dateB = new Date(b.biddingEnd || 0).getTime();
+        return dateA - dateB;
+      }
+      if (sortBy === 'price_desc') {
+        return (b.basePrice || 0) - (a.basePrice || 0);
+      }
+      if (sortBy === 'price_asc') {
+        return (a.basePrice || 0) - (b.basePrice || 0);
+      }
+      // Default: 'recent' - recent shipment on top (descending)
+      const dateA = new Date(a.biddingEnd || a.createdAt || 0).getTime();
+      const dateB = new Date(b.biddingEnd || b.createdAt || 0).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      const createdA = new Date(a.createdAt || 0).getTime();
+      const createdB = new Date(b.createdAt || 0).getTime();
+      return createdB - createdA;
+    });
+  }, [shipments, sortBy]);
 
   return (
     <div className="space-y-6">
@@ -75,7 +108,7 @@ export const TransporterBrowse = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-brand-border shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="bg-white p-4 rounded-xl border border-brand-border shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="relative">
           <Search className="w-4 h-4 text-brand-text-muted absolute left-3 top-3" />
           <input
@@ -123,6 +156,21 @@ export const TransporterBrowse = () => {
             className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] placeholder:text-brand-text-muted"
           />
         </div>
+
+        <div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-border)] focus:border-[var(--color-primary)] bg-white text-brand-text-primary font-medium"
+            title="Sort Consignments"
+          >
+            <option value="recent">Sort: Recent First</option>
+            <option value="ending_soon">Sort: Ending Soonest</option>
+            <option value="oldest">Sort: Oldest First</option>
+            <option value="price_desc">Sort: Budget (High to Low)</option>
+            <option value="price_asc">Sort: Budget (Low to High)</option>
+          </select>
+        </div>
       </div>
 
       {/* Shipments Cards Grid */}
@@ -130,7 +178,7 @@ export const TransporterBrowse = () => {
         <div className="py-20 text-center text-xs text-brand-text-muted">
           Loading freight consignment auctions...
         </div>
-      ) : shipments.length === 0 ? (
+      ) : sortedShipments.length === 0 ? (
         <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-brand-border p-8">
           <Truck className="w-10 h-10 text-brand-text-muted mx-auto mb-3" />
           <h3 className="text-base font-bold text-brand-text-primary">No consignments match your criteria</h3>
@@ -138,7 +186,7 @@ export const TransporterBrowse = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {shipments.map((s) => {
+          {sortedShipments.map((s) => {
             const isOpen = s.status === 'OPEN';
             const secs = s.biddingEnd
               ? Math.max(0, Math.floor(((parseISTDate(s.biddingEnd)?.getTime() || 0) - Date.now()) / 1000))
