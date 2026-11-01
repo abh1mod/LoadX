@@ -74,7 +74,7 @@ const getShipmentLeaderboard = async (shipmentId, currentUserId = null) => {
     status: BID_STATUS.ACTIVE
   })
     .sort({ amount: 1, lastAmountChangedAt: 1 })
-    .populate('transporter', 'name companyName city')
+    .populate('transporter', 'name companyName city phone')
     .lean();
 
   let myRank = null;
@@ -103,6 +103,7 @@ const getShipmentLeaderboard = async (shipmentId, currentUserId = null) => {
       transporterName: b.transporter?.name || 'Transporter',
       companyName: b.transporter?.companyName || 'Logistics Co',
       city: b.transporter?.city || '',
+      phone: b.transporter?.phone || '',
       amount: b.amount,
       expectedDeliveryHours: b.expectedDeliveryHours,
       isMe: Boolean(isMe),

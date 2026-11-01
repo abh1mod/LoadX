@@ -187,11 +187,22 @@ export const SupplierShipments = () => {
             Manage your posted freight loads, monitor real-time bids, and award winning contracts.
           </p>
         </div>
-        <Link to="/supplier/shipments/new">
-          <Button variant="primary" icon={PlusCircle} className="cursor-pointer">
-            Create New Shipment
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            icon={RefreshCw}
+            onClick={fetchShipments}
+            loading={loading}
+            className="cursor-pointer"
+          >
+            Refresh
           </Button>
-        </Link>
+          <Link to="/supplier/shipments/new">
+            <Button variant="primary" icon={PlusCircle} className="cursor-pointer">
+              Create New Shipment
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Status Tabs */}

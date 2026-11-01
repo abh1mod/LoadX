@@ -14,7 +14,9 @@ import {
   FileCheck2,
   Calendar,
   Award,
-  StopCircle
+  StopCircle,
+  RefreshCw,
+  Phone
 } from 'lucide-react';
 import api from '../../api/axios';
 import { usePolling } from '../../hooks/usePolling';
@@ -49,6 +51,7 @@ export const SupplierShipmentDetail = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch initial static shipment details
   const fetchShipmentDetail = useCallback(async () => {
@@ -83,6 +86,18 @@ export const SupplierShipmentDetail = () => {
     }
     return null;
   }, [id, shipment?.status]);
+
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([fetchShipmentDetail(), pollBids()]);
+      toast.success('Bidding dashboard refreshed');
+    } catch {
+      toast.error('Failed to refresh data');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const { data: liveData } = usePolling(pollBids, 1000, Boolean(isAuctionActive));
 
@@ -197,7 +212,18 @@ export const SupplierShipmentDetail = () => {
           </div>
 
           {/* Right Auction Controls */}
-          <div className="flex flex-col sm:items-end gap-2.5">
+          <div className="flex flex-wrap sm:items-center sm:justify-end gap-2.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={RefreshCw}
+              onClick={handleManualRefresh}
+              loading={refreshing}
+              className="cursor-pointer"
+            >
+              Refresh
+            </Button>
+
             {currentStatus === 'OPEN' && (
               <div className="flex flex-wrap items-center gap-2">
                 <Countdown secondsRemaining={secondsRemaining} isLive />
@@ -316,10 +342,24 @@ export const SupplierShipmentDetail = () => {
         <Card
           title="Consignment Transit Milestones"
           subtitle={`Contract awarded to ${shipment.awardedTo?.companyName || shipment.awardedTo?.name}${
+            shipment.awardedTo?.phone ? ` • Mobile: ${shipment.awardedTo.phone}` : ''
+          }${
             shipment.awardedExpectedDeliveryHours || shipment.awardedBid?.expectedDeliveryHours
               ? ` • Target Transit: ${shipment.awardedExpectedDeliveryHours || shipment.awardedBid?.expectedDeliveryHours} hrs`
               : ''
           }`}
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              icon={RefreshCw}
+              onClick={handleManualRefresh}
+              loading={refreshing}
+              className="text-xs cursor-pointer shadow-xs"
+            >
+              Refresh Milestones
+            </Button>
+          }
         >
           <div className="py-2">
             <Stepper
@@ -379,6 +419,7 @@ export const SupplierShipmentDetail = () => {
                   <tr>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Rank</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Transporter / Fleet</th>
+                    <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Mobile / Contact</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Rating & Verification</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Proposed Price (INR)</th>
                     <th className="py-3.5 px-6 first:pl-7 last:pr-7 whitespace-nowrap">Expected Delivery</th>
@@ -406,6 +447,20 @@ export const SupplierShipmentDetail = () => {
                         <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap">
                           <span className="font-semibold text-brand-text-primary block">{b.companyName}</span>
                           <span className="text-xs text-brand-text-muted block font-normal">{b.transporterName} • {b.city || 'India'}</span>
+                        </td>
+                        <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap">
+                          {b.phone ? (
+                            <a
+                              href={`tel:${b.phone.replace(/\s+/g, '')}`}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 font-mono text-xs font-semibold transition-colors"
+                              title={`Call ${b.transporterName || b.companyName}`}
+                            >
+                              <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <span>{b.phone}</span>
+                            </a>
+                          ) : (
+                            <span className="text-xs text-brand-text-muted italic">Not available</span>
+                          )}
                         </td>
                         <td className="py-4 px-6 first:pl-7 last:pr-7 whitespace-nowrap text-xs">
                           <div className="flex items-center gap-1.5">
@@ -479,7 +534,7 @@ export const SupplierShipmentDetail = () => {
       >
         <div className="space-y-3 text-xs text-brand-text-secondary">
           <p>
-            You are selecting <strong className="text-brand-text-primary">{bidToAward?.companyName}</strong> at a final agreed contract price of <strong className="text-emerald-700 text-sm font-mono">{bidToAward ? formatINR(bidToAward.amount) : ''}</strong>
+            You are selecting <strong className="text-brand-text-primary">{bidToAward?.companyName}</strong> ({bidToAward?.transporterName}{bidToAward?.phone ? ` • Mobile: ${bidToAward.phone}` : ''}) at a final agreed contract price of <strong className="text-emerald-700 text-sm font-mono">{bidToAward ? formatINR(bidToAward.amount) : ''}</strong>
             {bidToAward?.expectedDeliveryHours ? (
               <span> with expected delivery in <strong className="text-brand-text-primary font-mono">{bidToAward.expectedDeliveryHours} hours</strong></span>
             ) : ''}.

@@ -1,7 +1,26 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const getBaseURL = () => {
+  let url = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').trim();
+
+  // If missing protocol (e.g., "loadx-production.up.railway.app" or "loadx-production.up.railway.app/api")
+  if (!/^https?:\/\//i.test(url) && !url.startsWith('/')) {
+    url = `https://${url}`;
+  }
+
+  // Strip trailing slashes
+  url = url.replace(/\/+$/, '');
+
+  // Ensure /api suffix exists
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+
+  return url;
+};
+
+const baseURL = getBaseURL();
 
 const api = axios.create({
   baseURL,

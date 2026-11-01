@@ -133,6 +133,15 @@ export const SupplierDashboard = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            icon={RefreshCw}
+            onClick={fetchMyShipments}
+            loading={loading}
+            className="cursor-pointer"
+          >
+            Refresh
+          </Button>
           <Link to="/supplier/shipments/new">
             <Button variant="primary" icon={PlusCircle} className="cursor-pointer">
               Post New Shipment
