@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 import { getStatusBadgeStyle } from '../../utils/formatters';
 
 export const Badge = ({
@@ -10,6 +11,7 @@ export const Badge = ({
 }) => {
   const style = getStatusBadgeStyle(status);
   const displayLabel = label || style.label;
+  const isDelivered = status === 'DELIVERED';
 
   const sizeClasses = {
     sm: 'text-xs px-2 py-0.5',
@@ -22,7 +24,11 @@ export const Badge = ({
       className={`inline-flex items-center gap-1.5 rounded-full border ring-1 ring-inset ${style.bg} ${sizeClasses[size] || sizeClasses.md} ${className}`}
     >
       {showDot && (
-        <span className={`w-1.5 h-1.5 rounded-full ${style.dot} shrink-0`} />
+        isDelivered ? (
+          <Check className="w-3.5 h-3.5 text-emerald-700 stroke-[3] shrink-0" />
+        ) : (
+          <span className={`w-1.5 h-1.5 rounded-full ${style.dot} shrink-0`} />
+        )
       )}
       <span>{displayLabel}</span>
     </span>

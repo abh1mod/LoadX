@@ -10,6 +10,7 @@ export const Stepper = ({
   advanceLoading = false
 }) => {
   const currentIndex = MILESTONES.indexOf(currentMilestone);
+  const isDeliveredFinished = currentMilestone === 'Delivered';
 
   // Map recorded milestone details (completedAt, note)
   const recordedMap = new Map();
@@ -22,6 +23,8 @@ export const Stepper = ({
           {MILESTONES.map((stepName, index) => {
             const isCompleted = index <= currentIndex;
             const isCurrent = index === currentIndex;
+            const isFinishedStep = isCompleted && (!isCurrent || (isCurrent && isDeliveredFinished));
+            const isPulsingCurrent = isCurrent && !isDeliveredFinished;
             const record = recordedMap.get(stepName);
 
             return (
@@ -31,7 +34,7 @@ export const Stepper = ({
                   <div
                     className="absolute left-4 top-8 -bottom-4 w-0.5"
                     style={{
-                      backgroundColor: index < currentIndex ? 'var(--color-primary)' : 'var(--color-border)'
+                      backgroundColor: (index < currentIndex || isDeliveredFinished) ? 'var(--color-primary)' : 'var(--color-border)'
                     }}
                   />
                 )}
@@ -39,27 +42,27 @@ export const Stepper = ({
                 {/* Step Circle Indicator */}
                 <div
                   className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                    isCurrent
+                    isPulsingCurrent
                       ? 'ring-4'
-                      : isCompleted
+                      : isFinishedStep
                       ? 'text-white'
                       : 'border-slate-300 bg-white text-slate-400'
                   }`}
                   style={{
-                    backgroundColor: isCurrent
+                    backgroundColor: isPulsingCurrent
                       ? 'var(--color-primary-light)'
-                      : isCompleted
+                      : isFinishedStep
                       ? 'var(--color-primary)'
                       : '#FFFFFF',
-                    borderColor: isCurrent || isCompleted
+                    borderColor: isPulsingCurrent || isFinishedStep
                       ? 'var(--color-primary)'
                       : 'var(--color-border)',
-                    boxShadow: isCurrent ? '0 0 0 4px var(--color-primary-light)' : 'none'
+                    boxShadow: isPulsingCurrent ? '0 0 0 4px var(--color-primary-light)' : 'none'
                   }}
                 >
-                  {isCompleted && !isCurrent ? (
+                  {isFinishedStep ? (
                     <Check className="h-4 w-4 stroke-[3]" />
-                  ) : isCurrent ? (
+                  ) : isPulsingCurrent ? (
                     <span
                       className="h-2.5 w-2.5 rounded-full animate-pulse"
                       style={{ backgroundColor: 'var(--color-primary)' }}
@@ -72,18 +75,26 @@ export const Stepper = ({
                 {/* Step Content */}
                 <div className="flex-1 pt-0.5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h4
-                      className="text-sm font-semibold tracking-tight"
-                      style={{
-                        color: isCurrent
-                          ? 'var(--color-primary)'
-                          : isCompleted
-                          ? 'var(--color-text-primary)'
-                          : 'var(--color-text-muted)'
-                      }}
-                    >
-                      {stepName}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <h4
+                        className="text-sm font-semibold tracking-tight"
+                        style={{
+                          color: isPulsingCurrent
+                            ? 'var(--color-primary)'
+                            : isFinishedStep
+                            ? 'var(--color-text-primary)'
+                            : 'var(--color-text-muted)'
+                        }}
+                      >
+                        {stepName}
+                      </h4>
+                      {stepName === 'Delivered' && isDeliveredFinished && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          Delivered
+                        </span>
+                      )}
+                    </div>
                     {record?.completedAt && (
                       <span className="text-xs text-brand-text-muted font-medium">
                         {formatDateTime(record.completedAt)}

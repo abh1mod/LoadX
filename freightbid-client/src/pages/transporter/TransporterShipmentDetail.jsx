@@ -548,13 +548,21 @@ export const TransporterShipmentDetail = () => {
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-emerald-950">Congratulations! This consignment was awarded to you.</h4>
-                  <p className="text-xs text-emerald-800 mt-0.5">Track and update the transit milestones from your Awarded Shipments tab.</p>
+                  <h4 className="font-bold text-sm text-emerald-950">
+                    {currentStatus === 'DELIVERED'
+                      ? 'Consignment Delivery Completed & Verified!'
+                      : 'Congratulations! This consignment was awarded to you.'}
+                  </h4>
+                  <p className="text-xs text-emerald-800 mt-0.5">
+                    {currentStatus === 'DELIVERED'
+                      ? 'Delivery has been completed successfully and verified with shipper PIN.'
+                      : 'Track and update the transit milestones from your Awarded Shipments tab.'}
+                  </p>
                 </div>
               </div>
               <Link to="/transporter/awarded">
                 <Button variant="primary" size="sm" className="whitespace-nowrap shadow-sm">
-                  Go to Milestone Updater &rarr;
+                  {currentStatus === 'DELIVERED' ? 'View Milestone History \u2192' : 'Go to Milestone Updater \u2192'}
                 </Button>
               </Link>
             </div>

@@ -17,7 +17,8 @@ import {
   StopCircle,
   RefreshCw,
   Phone,
-  KeyRound
+  KeyRound,
+  Check
 } from 'lucide-react';
 import api from '../../api/axios';
 import { usePolling } from '../../hooks/usePolling';
@@ -369,8 +370,8 @@ export const SupplierShipmentDetail = () => {
             />
           </div>
 
-          {/* Delivery Verification PIN Box */}
-          {shipment.deliveryPin && (
+          {/* Delivery Verification PIN Box (Only visible while transit is active; hidden after delivery) */}
+          {shipment.deliveryPin && shipment.status !== 'DELIVERED' && shipment.currentMilestone !== 'Delivered' && (
             <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
               <div className="flex items-center gap-3.5">
                 <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -386,9 +387,7 @@ export const SupplierShipmentDetail = () => {
                     </span>
                   </div>
                   <p className="text-xs text-emerald-800 mt-0.5">
-                    {shipment.status === 'DELIVERED'
-                      ? 'Consignment delivery has been verified and confirmed with this secure PIN.'
-                      : 'Provide this 6-digit PIN to the transporter driver only after the cargo is safely delivered and inspected.'}
+                    Provide this 6-digit PIN to the transporter driver only after the cargo is safely delivered and inspected.
                   </p>
                 </div>
               </div>
@@ -397,6 +396,35 @@ export const SupplierShipmentDetail = () => {
                   {shipment.deliveryPin}
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Delivery Completed & Verified Confirmation Box */}
+          {(shipment.status === 'DELIVERED' || shipment.currentMilestone === 'Delivered') && (
+            <div className="mt-5 p-4 rounded-xl bg-emerald-50/90 border border-emerald-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-emerald-950 shadow-2xs">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Check className="w-5 h-5 stroke-[3]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-950">
+                      Consignment Delivered & Verified
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                      PIN Verified
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-800 mt-0.5">
+                    Delivery handover has been completed and verified with the secure PIN.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow-xs self-start sm:self-auto">
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                Delivery Complete
+              </span>
             </div>
           )}
 
