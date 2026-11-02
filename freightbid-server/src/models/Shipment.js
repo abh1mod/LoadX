@@ -132,6 +132,10 @@ const shipmentSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    deliveryPin: {
+      type: String,
+      default: () => Math.floor(100000 + Math.random() * 900000).toString()
+    },
     milestones: [milestoneRecordSchema],
     repostedFrom: {
       type: mongoose.Schema.Types.ObjectId,

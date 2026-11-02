@@ -362,6 +362,26 @@ const updateMilestone = async (req, res, next) => {
       });
     }
 
+    // When marking 'Delivered', transporter must provide the matching 6-digit PIN from the shipper
+    if (milestone === 'Delivered') {
+      const inputPin = (req.body.deliveryPin || '').toString().trim();
+      const expectedPin = (shipment.deliveryPin || '').toString().trim();
+
+      if (!inputPin) {
+        return res.status(400).json({
+          success: false,
+          message: '6-digit Delivery PIN is required. Please obtain the PIN from the shipper upon delivery handover.'
+        });
+      }
+
+      if (!expectedPin || inputPin !== expectedPin) {
+        return res.status(400).json({
+          success: false,
+          message: 'Incorrect 6-digit Delivery PIN. Delivery cannot be marked without the valid PIN from the shipper.'
+        });
+      }
+    }
+
     const now = new Date();
     shipment.currentMilestone = milestone;
     shipment.milestones.push({

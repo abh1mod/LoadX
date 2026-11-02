@@ -178,9 +178,26 @@ const getShipmentById = async (req, res, next) => {
       review = await Review.findOne({ shipment: shipment._id });
     }
 
+    // Ensure 6-digit delivery PIN exists (for legacy seeded/created shipments)
+    if (!shipment.deliveryPin) {
+      shipment.deliveryPin = Math.floor(100000 + Math.random() * 900000).toString();
+      await shipment.save();
+    }
+
+    // Convert to plain object to optionally redact PIN for non-shippers
+    const shipmentData = shipment.toObject();
+
+    const isSupplierOwner = req.user && shipment.supplier && shipment.supplier._id?.toString() === req.user._id.toString();
+    const isAdmin = req.user?.role === 'ADMIN';
+
+    // Only the shipper owner or admin can see the confidential delivery verification PIN
+    if (!isSupplierOwner && !isAdmin) {
+      delete shipmentData.deliveryPin;
+    }
+
     res.status(200).json({
       success: true,
-      shipment,
+      shipment: shipmentData,
       review
     });
   } catch (error) {
@@ -447,6 +464,7 @@ const awardShipment = async (req, res, next) => {
           awardedAmount: winningBid.amount,
           awardedExpectedDeliveryHours: winningBid.expectedDeliveryHours || null,
           awardedAt: new Date(),
+          deliveryPin: shipment.deliveryPin || Math.floor(100000 + Math.random() * 900000).toString(),
           currentMilestone: 'Awarded',
           milestones: [
             {

@@ -8,7 +8,8 @@ import {
   ArrowRight,
   FileCheck2,
   ChevronRight,
-  Send
+  Send,
+  KeyRound
 } from 'lucide-react';
 import api from '../../api/axios';
 import Card from '../../components/common/Card';
@@ -27,6 +28,7 @@ export const TransporterAwarded = () => {
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [nextMilestoneName, setNextMilestoneName] = useState('');
   const [advanceNote, setAdvanceNote] = useState('');
+  const [deliveryPin, setDeliveryPin] = useState('');
   const [advanceLoading, setAdvanceLoading] = useState(false);
   const [advanceModalOpen, setAdvanceModalOpen] = useState(false);
 
@@ -56,21 +58,36 @@ export const TransporterAwarded = () => {
     setSelectedShipment(shipment);
     setNextMilestoneName(nextStep);
     setAdvanceNote('');
+    setDeliveryPin('');
     setAdvanceModalOpen(true);
   };
 
   const handleConfirmAdvance = async () => {
     if (!selectedShipment || !nextMilestoneName) return;
+
+    if (nextMilestoneName === 'Delivered') {
+      if (!deliveryPin || deliveryPin.trim().length !== 6) {
+        toast.error('Please enter the 6-digit Delivery PIN provided by the shipper.');
+        return;
+      }
+    }
+
     setAdvanceLoading(true);
     try {
-      const res = await api.patch(`/shipments/${selectedShipment._id}/milestone`, {
+      const payload = {
         milestone: nextMilestoneName,
         note: advanceNote
-      });
+      };
+      if (nextMilestoneName === 'Delivered') {
+        payload.deliveryPin = deliveryPin.trim();
+      }
+
+      const res = await api.patch(`/shipments/${selectedShipment._id}/milestone`, payload);
       if (res.data?.success) {
         toast.success(`Milestone updated to '${nextMilestoneName}'!`);
         setAdvanceModalOpen(false);
         setSelectedShipment(null);
+        setDeliveryPin('');
         fetchAwardedShipments();
       }
     } catch (err) {
@@ -227,6 +244,31 @@ export const TransporterAwarded = () => {
           <p className="text-xs text-brand-text-secondary leading-relaxed">
             You are advancing this shipment to <strong className="text-[var(--color-primary)] font-semibold">{nextMilestoneName}</strong>. Milestones are permanent and visible to the shipper in real time.
           </p>
+
+          {nextMilestoneName === 'Delivered' && (
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2.5">
+              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
+                <KeyRound className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>6-Digit Delivery Verification PIN Required</span>
+              </div>
+              <p className="text-xs text-amber-800 leading-normal">
+                Please collect the 6-digit verification PIN from the shipper or receiver upon handover at destination to mark this consignment as Delivered.
+              </p>
+              <div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={deliveryPin}
+                  onChange={(e) => setDeliveryPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="Enter 6-digit PIN"
+                  className="w-full text-center font-mono text-2xl tracking-[0.3em] font-extrabold py-2 px-3 border border-amber-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-slate-900"
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-bold text-brand-text-primary uppercase tracking-wider mb-1.5">

@@ -16,7 +16,8 @@ import {
   Award,
   StopCircle,
   RefreshCw,
-  Phone
+  Phone,
+  KeyRound
 } from 'lucide-react';
 import api from '../../api/axios';
 import { usePolling } from '../../hooks/usePolling';
@@ -367,6 +368,37 @@ export const SupplierShipmentDetail = () => {
               currentMilestone={shipment.currentMilestone || 'Awarded'}
             />
           </div>
+
+          {/* Delivery Verification PIN Box */}
+          {shipment.deliveryPin && (
+            <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-950">
+                      Delivery Verification PIN
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      Shipper Confidential
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-800 mt-0.5">
+                    {shipment.status === 'DELIVERED'
+                      ? 'Consignment delivery has been verified and confirmed with this secure PIN.'
+                      : 'Provide this 6-digit PIN to the transporter driver only after the cargo is safely delivered and inspected.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 self-start sm:self-auto bg-white px-4 py-2.5 rounded-xl border border-emerald-300 shadow-2xs">
+                <span className="font-mono text-2xl font-black tracking-widest text-emerald-700 select-all">
+                  {shipment.deliveryPin}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Review if already submitted */}
           {review && (
