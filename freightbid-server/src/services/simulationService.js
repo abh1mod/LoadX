@@ -5,17 +5,8 @@ const Bid = require('../models/Bid');
 const { ROLES, USER_STATUS, SHIPMENT_STATUS, BID_STATUS } = require('../utils/constants');
 const { deriveAndSyncShipmentStatus } = require('./shipmentService');
 
+// Pool of 15 dedicated dummy transporters (Harpreet Singh / transporter1@delhifleet.com is explicitly excluded)
 const DUMMY_TRANSPORTERS = [
-  {
-    name: 'Harpreet Singh',
-    email: 'transporter1@delhifleet.com',
-    phone: '+91 98111 55005',
-    companyName: 'Delhi Fleet Logistics',
-    city: 'Delhi',
-    state: 'Delhi',
-    fleetSize: 35,
-    vehicleTypes: ['Truck (Open)', 'Container (Closed)', 'Trailer']
-  },
   {
     name: 'Ganesh Patil',
     email: 'transporter2@maharashtraexpress.com',
@@ -105,6 +96,66 @@ const DUMMY_TRANSPORTERS = [
     state: 'Uttar Pradesh',
     fleetSize: 24,
     vehicleTypes: ['Truck (Open)', 'Trailer']
+  },
+  {
+    name: 'Gurpreet Sandhu',
+    email: 'transporter11@punjabstar.com',
+    phone: '+91 98720 11998',
+    companyName: 'Punjab Star Roadways',
+    city: 'Amritsar',
+    state: 'Punjab',
+    fleetSize: 32,
+    vehicleTypes: ['Truck (Open)', 'Container (Closed)']
+  },
+  {
+    name: 'Dharmendra Shah',
+    email: 'transporter12@girnarfreight.com',
+    phone: '+91 98250 88776',
+    companyName: 'Girnar Freight Lines',
+    city: 'Surat',
+    state: 'Gujarat',
+    fleetSize: 26,
+    vehicleTypes: ['Trailer', 'Container (Closed)']
+  },
+  {
+    name: 'Anand Deshmukh',
+    email: 'transporter13@sahyadrilogistics.com',
+    phone: '+91 98230 66554',
+    companyName: 'Sahyadri Express Logistics',
+    city: 'Nagpur',
+    state: 'Maharashtra',
+    fleetSize: 29,
+    vehicleTypes: ['Container (Closed)', 'Truck (Open)']
+  },
+  {
+    name: 'Pradeep Swain',
+    email: 'transporter14@kalingafleet.com',
+    phone: '+91 94370 22331',
+    companyName: 'Kalinga Fleet Operators',
+    city: 'Bhubaneswar',
+    state: 'Odisha',
+    fleetSize: 21,
+    vehicleTypes: ['Truck (Open)', 'Trailer']
+  },
+  {
+    name: 'Muthu Raman',
+    email: 'transporter15@coromandelfreight.com',
+    phone: '+91 98400 33442',
+    companyName: 'Coromandel Heavy Movers',
+    city: 'Chennai',
+    state: 'Tamil Nadu',
+    fleetSize: 36,
+    vehicleTypes: ['Container (Closed)', 'Trailer']
+  },
+  {
+    name: 'Ajay Verma',
+    email: 'transporter16@indorecentral.com',
+    phone: '+91 98260 55112',
+    companyName: 'Indore Central Logistics',
+    city: 'Indore',
+    state: 'Madhya Pradesh',
+    fleetSize: 25,
+    vehicleTypes: ['Truck (Open)', 'Flatbed']
   }
 ];
 
@@ -112,7 +163,7 @@ const DUMMY_TRANSPORTERS = [
 const activeSimulations = new Map();
 
 /**
- * Ensure all 10 dummy transporters exist in DB and are VERIFIED
+ * Ensure all dummy transporters exist in DB and are VERIFIED
  */
 const getOrCreateDummyTransporters = async () => {
   const users = [];
@@ -140,7 +191,6 @@ const getOrCreateDummyTransporters = async () => {
         verifiedAt: new Date()
       });
     } else {
-      // Ensure phone and companyName are present
       if (!user.phone || !user.companyName) {
         user.phone = user.phone || item.phone;
         user.companyName = user.companyName || item.companyName;
@@ -174,7 +224,7 @@ const cancelSimulation = (shipmentId) => {
 };
 
 /**
- * Place a single dummy bid
+ * Place a single dummy bid (always creates a new active bid for the simulated transporter)
  */
 const placeSingleDummyBid = async (shipmentId, transporter, amount, expectedHours) => {
   try {
@@ -235,6 +285,7 @@ const placeSingleDummyBid = async (shipmentId, transporter, amount, expectedHour
 /**
  * Run a 1-minute bidding simulation for an ongoing OPEN shipment
  * Inserts 10 dummy bids staggered across 60 seconds
+ * Guarantees that any real user who already placed a bid is NEVER overwritten!
  */
 const startBiddingSimulation = async (shipmentId) => {
   const shipment = await Shipment.findById(shipmentId);
@@ -251,10 +302,38 @@ const startBiddingSimulation = async (shipmentId) => {
     throw new Error('A bidding simulation is already active for this shipment.');
   }
 
-  // 1. Ensure 10 dummy transporter profiles exist
-  const dummyTransporters = await getOrCreateDummyTransporters();
+  // 1. Find all transporters who have ALREADY placed active bids on this shipment
+  const existingActiveBids = await Bid.find({
+    shipment: shipmentId,
+    status: BID_STATUS.ACTIVE
+  }).select('transporter amount').lean();
 
-  // 2. Determine base conditions entered by shipper
+  const existingTransporterIds = new Set(
+    existingActiveBids
+      .map((b) => (b.transporter ? b.transporter.toString() : null))
+      .filter(Boolean)
+  );
+
+  // 2. Ensure dummy transporter profiles exist
+  const allDummyTransporters = await getOrCreateDummyTransporters();
+
+  // 3. Filter out:
+  //    - Harpreet Singh ('transporter1@delhifleet.com') explicitly excluded
+  //    - Any transporter that has ALREADY placed a bid on this consignment
+  const availableTransporters = allDummyTransporters.filter((t) => {
+    if (t.email === 'transporter1@delhifleet.com') return false;
+    if (existingTransporterIds.has(t._id.toString())) return false;
+    return true;
+  });
+
+  if (availableTransporters.length < 10) {
+    throw new Error('Insufficient unique dummy transporters available to run simulation.');
+  }
+
+  // Select 10 distinct transporters that have NO prior bid on this shipment
+  const selectedTransporters = availableTransporters.slice(0, 10);
+
+  // 4. Determine base conditions entered by shipper
   const basePrice = shipment.basePrice && shipment.basePrice > 0 ? shipment.basePrice : 60000;
 
   let baseHours = 48;
@@ -267,13 +346,11 @@ const startBiddingSimulation = async (shipmentId) => {
     }
   }
 
-  // 3. Pre-calculate 10 competitive bids (progressively undercutting to demonstrate reverse auction re-ranking)
-  // Percentages of basePrice (descending ladder so rank #1 continuously shifts!)
+  // 5. Pre-calculate 10 competitive bids (progressively undercutting to demonstrate reverse auction re-ranking)
   const priceFactors = [0.89, 0.96, 0.82, 0.94, 0.78, 0.87, 0.92, 0.76, 0.85, 0.74];
   const hourOffsets = [2, -1, 0, 3, -2, 1, -3, 0, -1, -4];
 
-  const simulationBids = dummyTransporters.map((transporter, idx) => {
-    // Add small variation (± ₹200) to keep realistic variety
+  const simulationBids = selectedTransporters.map((transporter, idx) => {
     const rawAmount = Math.round((basePrice * priceFactors[idx]) / 100) * 100;
     const amount = Math.min(basePrice, Math.max(1000, rawAmount));
     const expectedHours = Math.max(4, baseHours + hourOffsets[idx]);
@@ -296,10 +373,9 @@ const startBiddingSimulation = async (shipmentId) => {
 
   activeSimulations.set(shipmentId.toString(), simState);
 
-  // 4. Stagger across 1 minute (60,000 ms)
+  // 6. Stagger across 1 minute (60,000 ms)
   // Step 0: immediate (0s)
-  // Step 1: 6s, Step 2: 12s, Step 3: 18s, Step 4: 24s, Step 5: 30s,
-  // Step 6: 36s, Step 7: 42s, Step 8: 48s, Step 9: 54s
+  // Steps 1 to 9: every 6 seconds
   const intervalMs = 6000; // 6 seconds
 
   simulationBids.forEach((bidItem, index) => {
