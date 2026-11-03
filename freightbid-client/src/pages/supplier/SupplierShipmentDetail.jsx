@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Phone,
   KeyRound,
-  Check
+  Check,
+  Sparkles
 } from 'lucide-react';
 import api from '../../api/axios';
 import { usePolling } from '../../hooks/usePolling';
@@ -54,6 +55,17 @@ export const SupplierShipmentDetail = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewLoading, setReviewLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [simulationLoading, setSimulationLoading] = useState(false);
+  const [simulationSecondsLeft, setSimulationSecondsLeft] = useState(0);
+
+  // Simulation countdown effect
+  useEffect(() => {
+    if (simulationSecondsLeft <= 0) return;
+    const interval = setInterval(() => {
+      setSimulationSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [simulationSecondsLeft]);
 
   // Fetch initial static shipment details
   const fetchShipmentDetail = useCallback(async () => {
@@ -98,6 +110,22 @@ export const SupplierShipmentDetail = () => {
       toast.error('Failed to refresh data');
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleRunSimulation = async () => {
+    if (simulationLoading || simulationSecondsLeft > 0) return;
+    setSimulationLoading(true);
+    try {
+      const res = await api.post(`/shipments/${id}/simulate-bids`);
+      if (res.data?.success) {
+        toast.success(res.data.message || 'Simulation started! 10 dummy bids will be placed over 1 minute.');
+        setSimulationSecondsLeft(60);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to start bidding simulation');
+    } finally {
+      setSimulationLoading(false);
     }
   };
 
@@ -229,6 +257,27 @@ export const SupplierShipmentDetail = () => {
             {currentStatus === 'OPEN' && (
               <div className="flex flex-wrap items-center gap-2">
                 <Countdown secondsRemaining={secondsRemaining} isLive />
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={Sparkles}
+                  onClick={handleRunSimulation}
+                  loading={simulationLoading}
+                  disabled={simulationSecondsLeft > 0}
+                  className="border-indigo-300 text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100 hover:border-indigo-400 font-semibold cursor-pointer shadow-xs transition-colors text-xs"
+                  title="Simulate 10 dynamic transporter bids across 1 minute"
+                >
+                  {simulationSecondsLeft > 0 ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
+                      Simulating Bids ({simulationSecondsLeft}s)
+                    </span>
+                  ) : (
+                    'Insert Dummy Bids / Run Simulation'
+                  )}
+                </Button>
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -448,8 +497,31 @@ export const SupplierShipmentDetail = () => {
           subtitle="Rank 1 is the lowest proposed rate. Compare rates, verification, ratings, and delivery estimates."
         >
           {leaderboard.length === 0 ? (
-            <div className="py-12 text-center text-brand-text-muted text-xs">
-              No bids have been submitted yet for this consignment.
+            <div className="py-12 text-center text-brand-text-muted text-xs space-y-3">
+              <p>No bids have been submitted yet for this consignment.</p>
+              {currentStatus === 'OPEN' && (
+                <div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={Sparkles}
+                    onClick={handleRunSimulation}
+                    loading={simulationLoading}
+                    disabled={simulationSecondsLeft > 0}
+                    className="border-indigo-300 text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100 font-semibold cursor-pointer shadow-xs inline-flex text-xs"
+                    title="Simulate 10 dynamic transporter bids across 1 minute"
+                  >
+                    {simulationSecondsLeft > 0 ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
+                        Simulating Bids ({simulationSecondsLeft}s)
+                      </span>
+                    ) : (
+                      'Insert Dummy Bids / Run Simulation'
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -461,15 +533,36 @@ export const SupplierShipmentDetail = () => {
                       Current best offer is <strong>{formatINR(lowestBid)}</strong>. Satisfied with submitted rates? You can close bidding early and award the contract right away.
                     </span>
                   </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setEndBiddingModalOpen(true)}
-                    className="whitespace-nowrap cursor-pointer shadow-xs shrink-0"
-                  >
-                    <StopCircle className="w-3.5 h-3.5 mr-1" />
-                    End Bidding & Award
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      icon={Sparkles}
+                      onClick={handleRunSimulation}
+                      loading={simulationLoading}
+                      disabled={simulationSecondsLeft > 0}
+                      className="border-indigo-300 text-indigo-700 bg-white hover:bg-indigo-50 font-semibold cursor-pointer shadow-xs whitespace-nowrap text-xs"
+                      title="Simulate 10 dynamic transporter bids across 1 minute"
+                    >
+                      {simulationSecondsLeft > 0 ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
+                          Simulating ({simulationSecondsLeft}s)
+                        </span>
+                      ) : (
+                        'Insert Dummy Bids / Run Simulation'
+                      )}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setEndBiddingModalOpen(true)}
+                      className="whitespace-nowrap cursor-pointer shadow-xs shrink-0 text-xs"
+                    >
+                      <StopCircle className="w-3.5 h-3.5 mr-1" />
+                      End Bidding & Award
+                    </Button>
+                  </div>
                 </div>
               )}
 

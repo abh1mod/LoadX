@@ -3,6 +3,11 @@ const Bid = require('../models/Bid');
 const Review = require('../models/Review');
 const { SHIPMENT_STATUS, BID_STATUS, MILESTONES } = require('../utils/constants');
 const { deriveAndSyncShipmentStatus, getShipmentLeaderboard } = require('../services/shipmentService');
+const {
+  startBiddingSimulation,
+  isSimulationRunning,
+  cancelSimulation
+} = require('../services/simulationService');
 const { parseISTDate } = require('../utils/dateUtils');
 
 /**
@@ -404,6 +409,9 @@ const endBidding = async (req, res, next) => {
     shipment.biddingEndedAt = now;
     await shipment.save();
 
+    // Cancel any ongoing dummy bid simulation timers
+    cancelSimulation(shipment._id);
+
     res.status(200).json({
       success: true,
       message: bidCount > 0
@@ -550,6 +558,30 @@ const submitReview = async (req, res, next) => {
   }
 };
 
+/**
+ * Run a 1-minute bidding simulation with 10 dummy transporter bids (Supplier or Admin)
+ */
+const simulateBids = async (req, res, next) => {
+  try {
+    const shipment = await Shipment.findById(req.params.id);
+    if (!shipment) {
+      return res.status(404).json({ success: false, message: 'Shipment not found' });
+    }
+
+    if (shipment.supplier.toString() !== req.user._id.toString() && req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the shipment owner or admin can run a simulation.'
+      });
+    }
+
+    const result = await startBiddingSimulation(req.params.id);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createShipment,
   getMyShipments,
@@ -559,5 +591,6 @@ module.exports = {
   getShipmentBids,
   endBidding,
   awardShipment,
-  submitReview
+  submitReview,
+  simulateBids
 };

@@ -31,6 +31,7 @@ router.get('/:id/bids', shipmentController.getShipmentBids);
 router.get('/:id/leaderboard', transporterController.getLeaderboard);
 router.post('/:id/bids', authorize(ROLES.TRANSPORTER), transporterController.placeBid);
 router.put('/:id/bids/me', authorize(ROLES.TRANSPORTER), transporterController.updateMyBid);
+router.post('/:id/simulate-bids', authorize(ROLES.SUPPLIER, ROLES.ADMIN), shipmentController.simulateBids);
 
 // Award shipment (Supplier only)
 router.post('/:id/award', authorize(ROLES.SUPPLIER), shipmentController.awardShipment);
