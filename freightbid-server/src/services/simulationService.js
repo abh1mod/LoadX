@@ -269,7 +269,7 @@ const startBiddingSimulation = async (shipmentId) => {
 
   // 3. Pre-calculate 10 competitive bids (progressively undercutting to demonstrate reverse auction re-ranking)
   // Percentages of basePrice (descending ladder so rank #1 continuously shifts!)
-  const priceFactors = [0.96, 0.93, 0.90, 0.88, 0.85, 0.83, 0.80, 0.77, 0.75, 0.72];
+  const priceFactors = [0.89, 0.96, 0.82, 0.94, 0.78, 0.87, 0.92, 0.76, 0.85, 0.74];
   const hourOffsets = [2, -1, 0, 3, -2, 1, -3, 0, -1, -4];
 
   const simulationBids = dummyTransporters.map((transporter, idx) => {
