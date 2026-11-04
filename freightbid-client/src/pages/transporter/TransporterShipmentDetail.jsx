@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Package,
@@ -128,31 +128,37 @@ export const TransporterShipmentDetail = () => {
     shipment?.biddingEnd ? Math.max(0, Math.floor(((parseISTDate(shipment.biddingEnd)?.getTime() || 0) - Date.now()) / 1000)) : 0
   );
 
-  // Auto-populate input with current bid amount and expected delivery hours if user has bid
+  // Refs to ensure initial form field values are only populated once from server data
+  // and are not constantly reset when the user clears or edits the input fields
+  const initializedBidIdRef = useRef(null);
+  const initializedDefaultHoursRef = useRef(false);
+
+  // Auto-populate input with current bid amount and expected delivery hours ONCE when myBid loads
   useEffect(() => {
-    if (myBid) {
-      if (!bidAmountInput) {
-        setBidAmountInput(String(myBid.amount));
-      }
-      if (myBid.expectedDeliveryHours && !expectedDeliveryHoursInput) {
+    if (myBid && myBid._id && initializedBidIdRef.current !== myBid._id) {
+      initializedBidIdRef.current = myBid._id;
+      setBidAmountInput(String(myBid.amount));
+      if (myBid.expectedDeliveryHours) {
         setExpectedDeliveryHoursInput(String(myBid.expectedDeliveryHours));
       }
     }
-  }, [myBid, bidAmountInput, expectedDeliveryHoursInput]);
+  }, [myBid]);
 
-  // Set default value of expected delivery hours equal to difference between pickup and delivery dates
+  // Set default value of expected delivery hours ONCE equal to difference between pickup and delivery dates if no bid
   useEffect(() => {
-    if (shipment?.pickupDate && shipment?.deliveryDeadline && !expectedDeliveryHoursInput && !myBid?.expectedDeliveryHours) {
+    if (initializedDefaultHoursRef.current || myBid) return;
+    if (shipment?.pickupDate && shipment?.deliveryDeadline) {
       const p = parseISTDate(shipment.pickupDate);
       const d = parseISTDate(shipment.deliveryDeadline);
       if (p && d && d.getTime() > p.getTime()) {
         const diffHours = Math.round((d.getTime() - p.getTime()) / (1000 * 60 * 60));
         if (diffHours > 0) {
+          initializedDefaultHoursRef.current = true;
           setExpectedDeliveryHoursInput(String(diffHours));
         }
       }
     }
-  }, [shipment?.pickupDate, shipment?.deliveryDeadline, expectedDeliveryHoursInput, myBid]);
+  }, [shipment?.pickupDate, shipment?.deliveryDeadline, myBid]);
 
   const handleBidSubmit = async (e) => {
     e.preventDefault();
