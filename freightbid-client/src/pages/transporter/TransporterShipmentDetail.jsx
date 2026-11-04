@@ -16,7 +16,8 @@ import {
   Send
 } from 'lucide-react';
 import api from '../../api/axios';
-import { usePolling } from '../../hooks/usePolling';
+import { useAuth } from '../../context/AuthContext';
+import { useShipmentSocket } from '../../hooks/useShipmentSocket';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
@@ -27,6 +28,7 @@ import { formatINR, formatDateTime, parseISTDate } from '../../utils/formatters'
 
 export const TransporterShipmentDetail = () => {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const [shipment, setShipment] = useState(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
@@ -55,28 +57,72 @@ export const TransporterShipmentDetail = () => {
     fetchShipmentDetail();
   }, [fetchShipmentDetail]);
 
-  // Determine if auction polling should run (active while OPEN or CLOSED)
-  const isAuctionLive = shipment && ['OPEN', 'CLOSED'].includes(shipment.status);
+  // Initial & manual fetch for leaderboard & my rank
+  const [liveData, setLiveData] = useState(null);
 
-  // 1-second short polling query for leaderboard & my rank
-  const pollLeaderboard = useCallback(async () => {
-    const res = await api.get(`/shipments/${id}/leaderboard`);
-    if (res.data?.success) {
-      if (res.data.data.serverComputedStatus && shipment?.status !== res.data.data.serverComputedStatus) {
-        setShipment((prev) => prev ? { ...prev, status: res.data.data.serverComputedStatus } : null);
+  const fetchLeaderboard = useCallback(async () => {
+    try {
+      const res = await api.get(`/shipments/${id}/leaderboard`);
+      if (res.data?.success) {
+        setLiveData(res.data.data);
+        if (res.data.data.serverComputedStatus && shipment?.status !== res.data.data.serverComputedStatus) {
+          setShipment((prev) => (prev ? { ...prev, status: res.data.data.serverComputedStatus } : null));
+        }
+        return res.data.data;
       }
-      return res.data.data;
+    } catch {
+      // silently handle
     }
     return null;
   }, [id, shipment?.status]);
 
-  const { data: liveData, refreshNow } = usePolling(pollLeaderboard, 1000, Boolean(isAuctionLive));
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
+
+  // Real-time WebSocket connection for live reverse auction & milestone tracking
+  useShipmentSocket(id, {
+    onBidsUpdate: (data) => {
+      setLiveData(data);
+      if (data?.serverComputedStatus) {
+        setShipment((prev) => (prev ? { ...prev, status: data.serverComputedStatus } : prev));
+      }
+    },
+    onMilestoneUpdate: (data) => {
+      setShipment((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: data.status || prev.status,
+          currentMilestone: data.currentMilestone || prev.currentMilestone,
+          milestones: data.milestones || prev.milestones
+        };
+      });
+    },
+    onShipmentUpdate: (data) => {
+      setShipment((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...data
+        };
+      });
+    }
+  });
 
   const leaderboard = liveData?.leaderboard || [];
-  const myRank = liveData?.myRank;
-  const myBid = liveData?.myBid;
+  const myUserId = user?._id?.toString();
+  const myBidInLb = leaderboard.find((b) => b.transporterId?.toString() === myUserId);
+  const myRank = liveData?.myRank ?? (myBidInLb ? myBidInLb.rank : null);
+  const myBid = liveData?.myBid ?? (myBidInLb ? {
+    _id: myBidInLb.bidId,
+    amount: myBidInLb.amount,
+    expectedDeliveryHours: myBidInLb.expectedDeliveryHours,
+    lastAmountChangedAt: myBidInLb.lastAmountChangedAt,
+    placedAt: myBidInLb.placedAt
+  } : null);
   const lowestBid = liveData?.lowestBid;
-  const totalBidders = liveData?.totalBidders || 0;
+  const totalBidders = liveData?.totalBidders || (leaderboard.length || 0);
   const currentStatus = liveData?.serverComputedStatus || shipment?.status;
   const secondsRemaining = liveData?.secondsRemaining ?? (
     shipment?.biddingEnd ? Math.max(0, Math.floor(((parseISTDate(shipment.biddingEnd)?.getTime() || 0) - Date.now()) / 1000)) : 0
@@ -140,14 +186,14 @@ export const TransporterShipmentDetail = () => {
         const res = await api.put(`/shipments/${id}/bids/me`, payload);
         if (res.data?.success) {
           toast.success(`Bid updated to ${formatINR(numericAmount)}!`);
-          refreshNow();
+          fetchLeaderboard();
         }
       } else {
         // Place initial bid
         const res = await api.post(`/shipments/${id}/bids`, payload);
         if (res.data?.success) {
           toast.success(`Bid placed at ${formatINR(numericAmount)}!`);
-          refreshNow();
+          fetchLeaderboard();
         }
       }
     } catch (err) {

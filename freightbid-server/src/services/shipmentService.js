@@ -44,6 +44,11 @@ const deriveAndSyncShipmentStatus = async (shipment) => {
   if (newStatus !== shipment.status) {
     await Shipment.updateOne({ _id: shipment._id }, { $set: { status: newStatus } });
     shipment.status = newStatus;
+
+    try {
+      const { emitShipmentUpdate } = require('../socket');
+      emitShipmentUpdate(shipment._id, { status: newStatus });
+    } catch (_) {}
   }
 
   return newStatus;

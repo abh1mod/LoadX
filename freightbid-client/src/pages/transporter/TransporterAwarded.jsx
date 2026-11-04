@@ -18,6 +18,7 @@ import Badge from '../../components/common/Badge';
 import Stepper from '../../components/common/Stepper';
 import Modal from '../../components/common/Modal';
 import toast from 'react-hot-toast';
+import { getSocket } from '../../socket';
 import { formatINR, formatDateTime, MILESTONES } from '../../utils/formatters';
 
 export const TransporterAwarded = () => {
@@ -49,6 +50,44 @@ export const TransporterAwarded = () => {
   useEffect(() => {
     fetchAwardedShipments();
   }, [fetchAwardedShipments]);
+
+  // Real-time WebSocket connection to receive live milestone updates across awarded shipments
+  useEffect(() => {
+    if (!shipments || shipments.length === 0) return;
+
+    const socket = getSocket();
+    if (!socket.connected) socket.connect();
+
+    shipments.forEach((s) => {
+      socket.emit('join_shipment', s._id);
+    });
+
+    const handleMilestoneUpdate = (data) => {
+      if (!data) return;
+      setShipments((prevList) =>
+        prevList.map((s) => {
+          if (data.shipmentId && s._id.toString() === data.shipmentId.toString()) {
+            return {
+              ...s,
+              status: data.status || s.status,
+              currentMilestone: data.currentMilestone || s.currentMilestone,
+              milestones: data.milestones || s.milestones
+            };
+          }
+          return s;
+        })
+      );
+    };
+
+    socket.on('milestone_updated', handleMilestoneUpdate);
+
+    return () => {
+      shipments.forEach((s) => {
+        socket.emit('leave_shipment', s._id);
+      });
+      socket.off('milestone_updated', handleMilestoneUpdate);
+    };
+  }, [shipments.map((s) => s._id).join(',')]);
 
   const handleOpenAdvance = (shipment) => {
     const currentIdx = MILESTONES.indexOf(shipment.currentMilestone || MILESTONES[0]);

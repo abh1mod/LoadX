@@ -3,7 +3,8 @@ const User = require('../models/User');
 const Shipment = require('../models/Shipment');
 const Bid = require('../models/Bid');
 const { ROLES, USER_STATUS, SHIPMENT_STATUS, BID_STATUS } = require('../utils/constants');
-const { deriveAndSyncShipmentStatus } = require('./shipmentService');
+const { deriveAndSyncShipmentStatus, getShipmentLeaderboard } = require('./shipmentService');
+const { emitBidsUpdate } = require('../socket');
 
 // Pool of 15 dedicated dummy transporters (Harpreet Singh / transporter1@delhifleet.com is explicitly excluded)
 const DUMMY_TRANSPORTERS = [
@@ -274,6 +275,11 @@ const placeSingleDummyBid = async (shipmentId, transporter, amount, expectedHour
         }]
       });
     }
+
+    // Broadcast live bids update via WebSocket
+    getShipmentLeaderboard(shipment._id).then((lb) => {
+      emitBidsUpdate(shipment._id, lb);
+    }).catch((err) => console.error('[Socket] Error broadcasting simulation bid update:', err));
 
     return true;
   } catch (err) {

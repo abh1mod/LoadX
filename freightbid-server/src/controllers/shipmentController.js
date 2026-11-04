@@ -9,6 +9,7 @@ const {
   cancelSimulation
 } = require('../services/simulationService');
 const { parseISTDate } = require('../utils/dateUtils');
+const { emitBidsUpdate, emitMilestoneUpdate, emitShipmentUpdate } = require('../socket');
 
 /**
  * Create a new shipment (Supplier only)
@@ -412,6 +413,12 @@ const endBidding = async (req, res, next) => {
     // Cancel any ongoing dummy bid simulation timers
     cancelSimulation(shipment._id);
 
+    // Broadcast live bids and status update via WebSocket
+    getShipmentLeaderboard(shipment._id).then((lb) => {
+      emitBidsUpdate(shipment._id, lb);
+    }).catch((err) => console.error('[Socket] Error broadcasting bids update:', err));
+    emitShipmentUpdate(shipment._id, { status: shipment.status, currentMilestone: shipment.currentMilestone });
+
     res.status(200).json({
       success: true,
       message: bidCount > 0
@@ -499,6 +506,21 @@ const awardShipment = async (req, res, next) => {
       { shipment: shipment._id, _id: { $ne: winningBid._id } },
       { $set: { status: BID_STATUS.LOST } }
     );
+
+    // Broadcast awarded milestone and shipment update via WebSocket
+    emitMilestoneUpdate(shipment._id, {
+      shipmentId: shipment._id.toString(),
+      status: updatedShipment.status,
+      currentMilestone: updatedShipment.currentMilestone,
+      milestones: updatedShipment.milestones,
+      awardedTo: updatedShipment.awardedTo,
+      awardedAmount: updatedShipment.awardedAmount,
+      awardedExpectedDeliveryHours: updatedShipment.awardedExpectedDeliveryHours
+    });
+    emitShipmentUpdate(shipment._id, {
+      shipmentId: shipment._id.toString(),
+      ...updatedShipment.toObject()
+    });
 
     res.status(200).json({
       success: true,

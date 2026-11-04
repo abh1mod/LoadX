@@ -22,7 +22,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import api from '../../api/axios';
-import { usePolling } from '../../hooks/usePolling';
+import { useShipmentSocket } from '../../hooks/useShipmentSocket';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
@@ -86,25 +86,63 @@ export const SupplierShipmentDetail = () => {
     fetchShipmentDetail();
   }, [fetchShipmentDetail]);
 
-  // Live polling for bids (active when shipment is OPEN or CLOSED awaiting award)
-  const isAuctionActive = shipment && ['OPEN', 'CLOSED'].includes(shipment.status);
+  // Initial & manual fetch for bids
+  const [liveData, setLiveData] = useState(null);
 
-  const pollBids = useCallback(async () => {
-    const res = await api.get(`/shipments/${id}/bids`);
-    if (res.data?.success) {
-      // If status changed on server, sync it
-      if (res.data.data.serverComputedStatus && shipment?.status !== res.data.data.serverComputedStatus) {
-        setShipment((prev) => prev ? { ...prev, status: res.data.data.serverComputedStatus } : null);
+  const fetchBids = useCallback(async () => {
+    try {
+      const res = await api.get(`/shipments/${id}/bids`);
+      if (res.data?.success) {
+        setLiveData(res.data.data);
+        if (res.data.data.serverComputedStatus && shipment?.status !== res.data.data.serverComputedStatus) {
+          setShipment((prev) => (prev ? { ...prev, status: res.data.data.serverComputedStatus } : null));
+        }
+        return res.data.data;
       }
-      return res.data.data;
+    } catch {
+      // silently handle
     }
     return null;
   }, [id, shipment?.status]);
 
+  useEffect(() => {
+    fetchBids();
+  }, [fetchBids]);
+
+  // Real-time WebSocket connection for live reverse auction & milestone tracking
+  useShipmentSocket(id, {
+    onBidsUpdate: (data) => {
+      setLiveData(data);
+      if (data?.serverComputedStatus) {
+        setShipment((prev) => (prev ? { ...prev, status: data.serverComputedStatus } : prev));
+      }
+    },
+    onMilestoneUpdate: (data) => {
+      setShipment((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: data.status || prev.status,
+          currentMilestone: data.currentMilestone || prev.currentMilestone,
+          milestones: data.milestones || prev.milestones
+        };
+      });
+    },
+    onShipmentUpdate: (data) => {
+      setShipment((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...data
+        };
+      });
+    }
+  });
+
   const handleManualRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([fetchShipmentDetail(), pollBids()]);
+      await Promise.all([fetchShipmentDetail(), fetchBids()]);
       toast.success('Bidding dashboard refreshed');
     } catch {
       toast.error('Failed to refresh data');
@@ -128,8 +166,6 @@ export const SupplierShipmentDetail = () => {
       setSimulationLoading(false);
     }
   };
-
-  const { data: liveData } = usePolling(pollBids, 1000, Boolean(isAuctionActive));
 
   const leaderboard = liveData?.leaderboard || [];
   const lowestBid = liveData?.lowestBid;

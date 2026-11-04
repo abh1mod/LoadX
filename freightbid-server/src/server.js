@@ -1,8 +1,10 @@
 process.env.TZ = process.env.TZ || 'Asia/Kolkata';
 require('dotenv').config();
+const http = require('http');
 const app = require('./app');
 const { connectDB } = require('./config/db');
 const { initStatusCron } = require('./jobs/statusCron');
+const { initSocket } = require('./socket');
 
 const PORT = process.env.PORT || 5000;
 const User = require('./models/User');
@@ -23,9 +25,13 @@ const startServer = async () => {
     // Start background status transition cron job
     initStatusCron();
 
-    const server = app.listen(PORT, () => {
+    // Create HTTP server and initialize WebSocket
+    const server = http.createServer(app);
+    initSocket(server);
+
+    server.listen(PORT, () => {
       console.log(`=========================================`);
-      console.log(`🚀 LoadX Server running on port ${PORT}`);
+      console.log(`🚀 LoadX Server with WebSockets running on port ${PORT}`);
       console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
       console.log(`=========================================`);
     });

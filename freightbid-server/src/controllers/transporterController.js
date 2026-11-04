@@ -3,6 +3,7 @@ const Bid = require('../models/Bid');
 const { SHIPMENT_STATUS, BID_STATUS, MILESTONES } = require('../utils/constants');
 const { deriveAndSyncShipmentStatus, getShipmentLeaderboard } = require('../services/shipmentService');
 const { parseISTDate } = require('../utils/dateUtils');
+const { emitBidsUpdate, emitMilestoneUpdate, emitShipmentUpdate } = require('../socket');
 
 /**
  * Browse shipments for transporters with filtering and search
@@ -176,6 +177,11 @@ const placeBid = async (req, res, next) => {
       });
       await existingBid.save();
 
+      // Broadcast live bids update via WebSocket
+      getShipmentLeaderboard(shipment._id).then((lb) => {
+        emitBidsUpdate(shipment._id, lb);
+      }).catch((err) => console.error('[Socket] Error broadcasting bids update:', err));
+
       return res.status(200).json({
         success: true,
         message: 'Existing bid updated successfully!',
@@ -194,6 +200,11 @@ const placeBid = async (req, res, next) => {
       lastAmountChangedAt: now,
       history: [{ amount: numericAmount, expectedDeliveryHours: hoursNum, at: now }]
     });
+
+    // Broadcast live bids update via WebSocket
+    getShipmentLeaderboard(shipment._id).then((lb) => {
+      emitBidsUpdate(shipment._id, lb);
+    }).catch((err) => console.error('[Socket] Error broadcasting bids update:', err));
 
     res.status(201).json({
       success: true,
@@ -277,6 +288,11 @@ const updateMyBid = async (req, res, next) => {
     });
 
     await bid.save();
+
+    // Broadcast live bids update via WebSocket
+    getShipmentLeaderboard(shipment._id).then((lb) => {
+      emitBidsUpdate(shipment._id, lb);
+    }).catch((err) => console.error('[Socket] Error broadcasting bids update:', err));
 
     res.status(200).json({
       success: true,
@@ -397,6 +413,20 @@ const updateMilestone = async (req, res, next) => {
     }
 
     await shipment.save();
+
+    // Broadcast milestone and transit update via WebSocket
+    emitMilestoneUpdate(shipment._id, {
+      shipmentId: shipment._id.toString(),
+      status: shipment.status,
+      currentMilestone: shipment.currentMilestone,
+      milestones: shipment.milestones
+    });
+    emitShipmentUpdate(shipment._id, {
+      shipmentId: shipment._id.toString(),
+      status: shipment.status,
+      currentMilestone: shipment.currentMilestone,
+      milestones: shipment.milestones
+    });
 
     res.status(200).json({
       success: true,
